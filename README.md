@@ -15,18 +15,39 @@ Designed explicitly for speed, low latency voice interactions, and Google Cloud 
 *   **AI Engine:** Google `gemini-2.0-flash-exp` accessed via the **Gemini Multimodal Live API** websocket, specifically tuned for interruptible, real-time conversation.
 *   **Infrastructure:** Google Cloud Run. We automated the containerization and serverless deployment using a custom infrastructure-as-code shell script.
 
-## 🗣️ "Hey Chef" - Wake Word Activation
+## 🗣️ "Hey Chef" - Wake Word Activation (Accessibility)
 
-Just like Siri or Alexa, simply say **"Hey Chef"** to activate the AI. No buttons needed!
+For hands-free and visually impaired users, enable voice activation with one tap!
 
 | Feature | Description |
 | :--- | :--- |
 | **Wake Word** | Say "Hey Chef" to start a conversation |
-| **Always Listening** | Uses Web Speech API (free, browser-native) |
-| **Auto Disconnect** | 30 seconds of silence returns to listening mode |
+| **Opt-In Button** | Click "Hey Chef" button to enable voice listening |
+| **Auto Disconnect** | 30 seconds of silence returns to idle mode |
 | **Goodbye Detection** | Say "bye" or "thanks chef" to end the session |
 
-The orb responds visually: it pulses when it hears you speaking, then fully activates when "Hey Chef" is detected.
+The orb responds visually: it pulses when activated, then connects when "Hey Chef" is detected.
+
+---
+
+## 🖥️ Responsive Layout System
+
+Switch between Mobile and Tablet views for the best experience on any device:
+
+| View | Description |
+| :--- | :--- |
+| **Mobile** | Compact phone-frame layout (default) |
+| **Tablet** | Spacious wide layout with more room |
+
+### Sidebar Navigation (Desktop)
+On desktop, a vertical sidebar provides quick access to:
+- Home
+- Recipes
+- Saved
+- View (Mobile/Tablet toggle)
+- Settings
+
+The sidebar automatically hides on mobile devices for a clean, full-screen experience.
 
 ---
 
@@ -130,8 +151,16 @@ The app features a seamless multi-screen experience with smooth transitions:
 | Mode | Input Method | Best For... |
 | :--- | :--- | :--- |
 | **📷 Camera** | Live Video + Voice | Quickly identifying everything in your fridge at once. |
+| **📤 Upload** | Image Upload | Desktop users without camera, or uploading existing photos. |
 | **🎤 Audio** | Voice Only | Hands-free cooking once you've started the recipe. |
 | **⌨️ Text Input** | Keyboard | Precise adjustments or searching for specific recipes. |
+
+### Image Upload Feature
+For desktop users or devices without cameras, the Scan screen includes an **Upload** option:
+- Drag & drop images directly onto the upload zone
+- Click to browse and select files
+- Supports JPEG, PNG, and other common formats
+- AI analyzes the uploaded image for ingredients
 
 ![Mode Switching Demo](docs/mode_switching.webp)
 
@@ -241,18 +270,34 @@ This script automatically packages the application and deploys it as an unauthen
 | Category | Feature | Status |
 | :--- | :--- | :---: |
 | **Input Modes** | Camera (Vision + Voice) | ✅ |
+| | Image Upload (Drag & Drop) | ✅ |
 | | Audio (Voice Only) | ✅ |
 | | Text Input | ✅ |
-| **Voice** | "Hey Chef" Wake Word | ✅ |
+| **Voice** | "Hey Chef" Wake Word (Opt-in) | ✅ |
 | | Real-time Speech Recognition | ✅ |
 | | Interruption Detection | ✅ |
 | **Screens** | Home (Voice Orb) | ✅ |
-| | Scan (Camera Feed) | ✅ |
+| | Scan (Camera + Upload) | ✅ |
 | | Recipe Suggestions (Card Grid) | ✅ |
 | | Recipe Details | ✅ |
 | | Cook Mode (Step-by-Step) | ✅ |
+| | Landing Page | ✅ |
 | **UX** | Glassmorphism UI | ✅ |
 | | Smooth Screen Transitions | ✅ |
 | | Progress Tracking | ✅ |
 | | QR Code for Mobile | ✅ |
+| | Sidebar Navigation (Desktop) | ✅ |
+| | Mobile/Tablet View Toggle | ✅ |
+| **Accessibility** | Voice Activation Button | ✅ |
+| | Hands-free Operation | ✅ |
 | **Demo** | Works Without API Key | ✅ |
+
+---
+
+## 📄 License
+
+This project is proprietary software. See [LICENSE](LICENSE) for details.
+
+- Viewing/learning permitted
+- Commercial use requires license
+- All rights reserved by Pinky057

@@ -196,36 +196,50 @@ WebSocket → Base64 → Int16 PCM → Float32 → AudioBuffer → AudioContext 
 - [x] Full Node.js backend proxy with Gemini Live API relay
 - [x] Premium phone-framed UI with deep glassmorphism
 - [x] **Animated Orb:** 4 states (Idle, Listening, Thinking, Speaking)
-- [x] **Three Input Modes:** Camera, Audio, Text
+- [x] **Four Input Modes:** Camera, Upload, Audio, Text
 - [x] Visual feedback system for mode switching
+- [x] **Sidebar Navigation:** Vertical nav with View toggle (Desktop only)
+- [x] **Mobile/Tablet Layout:** Switchable layouts for different screen preferences
 
 ### Audio System
 - [x] **Audio Capture:** AudioWorklet → 16-bit PCM @ 16kHz → WebSocket
 - [x] **Audio Playback:** WebSocket → PCM @ 24kHz → AudioContext → Speakers
-- [x] **Wake Word Detection:** "Hey Chef" using Web Speech API (free)
+- [x] **Wake Word Detection:** "Hey Chef" as opt-in button (accessibility)
 - [x] **Interruption Handling:** User can cut off Chef mid-sentence
 - [x] **AI Integration:** Orb states synced with Gemini responses
 - [x] **Auto-Disconnect:** 30 seconds silence or goodbye phrases
 - [x] Silent error handling for speech recognition (no console spam)
+- [x] Fixed flickering issue with wake word detection
 
 ### Multi-Screen Navigation
 - [x] **Home Screen:** Voice orb + mode selection + transcript
-- [x] **Scan Screen:** Live camera feed with scanning animation
+- [x] **Scan Screen:** Live camera feed + Image upload with drag & drop
 - [x] **Suggestions Screen:** 2x2 recipe card grid with match percentages
 - [x] **Recipe Screen:** Full recipe with ingredients and directions
 - [x] **Cook Mode:** Step-by-step navigation with progress bar
+- [x] **Landing Page:** Separate landing page with 3D phone mockup
 - [x] Smooth slide transitions between all screens
 - [x] Back button navigation with reverse animations
 
+### Image Upload Feature
+- [x] **Camera/Upload Toggle:** Switch between live camera and image upload
+- [x] **Drag & Drop:** Drop images directly onto upload zone
+- [x] **Click to Browse:** Traditional file picker
+- [x] **Image Preview:** See uploaded image before processing
+- [x] **Remove Button:** Clear uploaded image and try again
+
 ### Demo Mode (Works Without API Key)
 - [x] **Text Input Demo:** Type ingredients → AI response → Suggestions screen
+- [x] **Upload Demo:** Upload image → Show detected ingredients
 - [x] **Dummy Recipe Data:** 4 sample recipes (French Toast, Egg Sandwich, etc.)
 - [x] Full flow testable: Home → Suggestions → Recipe → Cook Mode
 
 ### Extras
 - [x] **QR Code:** Desktop shows QR for easy mobile testing
 - [x] **Transcript Display:** Shows conversation history
+- [x] **Proprietary License:** IP protection for monetization
 - [x] Documentation: README and context files updated
+- [x] Git repository pushed to GitHub
 
 ---
 
@@ -285,7 +299,31 @@ We've archived high-quality demonstration assets for the project:
 
 ## 📝 Recent Session Notes
 
-### Session: March 11, 2026
+### Session: March 11, 2026 (Evening)
+
+**Major Work Completed:**
+1. **Image Upload Feature** - Camera/Upload toggle on scan screen with drag & drop support
+2. **Sidebar Navigation** - Vertical sidebar with Home, Recipes, Saved, View, Settings
+3. **Mobile/Tablet View Toggle** - Switch layouts via sidebar View menu
+4. **Wake Word Optimization** - Changed to opt-in button to fix flickering issue
+5. **Landing Page** - Separate landing.html with 3D phone mockup, features, accessibility section
+6. **Proprietary License** - Added LICENSE file for IP protection
+7. **Git Repository** - Pushed to GitHub at https://github.com/Pinky057/fridge-to-feast
+
+**Key Files Modified:**
+- `frontend/main.js` - Image upload handlers, sidebar navigation, view toggle
+- `frontend/style.css` - Sidebar styles, tablet layout, upload dropzone
+- `frontend/index.html` - Sidebar HTML, upload area in scan screen
+- `frontend/landing.html` - New landing page
+- `frontend/landing.css` - Landing page styles
+- `LICENSE` - Proprietary license for monetization
+
+**Fixed Issues:**
+- Mic button flickering caused by Web Speech API constant events
+- Camera mode on desktop without webcam now shows upload option
+- Pointer events on upload dropzone
+
+### Session: March 11, 2026 (Morning)
 
 **Major Work Completed:**
 1. **Recipe Suggestions Screen** - Added 2x2 grid of recipe cards with match percentages, cooking time, and difficulty
@@ -293,11 +331,6 @@ We've archived high-quality demonstration assets for the project:
 3. **Fixed Mode Switching Bug** - Menu animation was causing double-click (text then vision). Fixed by using `display: none` instead of opacity/transform animation
 4. **Silent Speech Recognition** - Removed console spam from "no-speech" errors
 5. **QR Code** - Added QR code card on desktop for easy mobile testing
-
-**Key Files Modified:**
-- `frontend/main.js` - Mode switching logic, text input demo flow, speech recognition error handling
-- `frontend/style.css` - Suggestions screen styles, fixed modes-menu animation
-- `frontend/index.html` - Suggestions screen HTML structure
 
 **Demo Flow (Works Without API Key):**
 1. Switch to Text mode (Modes → Text Input)
