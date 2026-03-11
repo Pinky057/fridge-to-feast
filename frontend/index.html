@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <title>Fridge-to-Feast | Live Agent</title>
+    <!-- Premium Google Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="./style.css">
+  </head>
+  <body>
+    <!-- Vertical Sidebar Navigation -->
+    <nav class="sidebar">
+      <div class="sidebar-logo">
+        <span class="logo-icon">🍳</span>
+        <span class="logo-text">Fridge-to-Feast</span>
+      </div>
+
+      <ul class="sidebar-nav">
+        <li class="nav-item active">
+          <i data-lucide="home"></i>
+          <span>Home</span>
+        </li>
+        <li class="nav-item">
+          <i data-lucide="book-open"></i>
+          <span>Recipes</span>
+        </li>
+        <li class="nav-item">
+          <i data-lucide="heart"></i>
+          <span>Saved</span>
+        </li>
+        <li class="nav-item has-submenu">
+          <div class="nav-item-header" id="view-toggle">
+            <i data-lucide="layout"></i>
+            <span>View</span>
+            <i data-lucide="chevron-down" class="chevron"></i>
+          </div>
+          <ul class="submenu" id="view-submenu">
+            <li class="submenu-item active" data-view="mobile">
+              <i data-lucide="smartphone"></i>
+              <span>Mobile</span>
+            </li>
+            <li class="submenu-item" data-view="tablet">
+              <i data-lucide="tablet"></i>
+              <span>Tablet</span>
+            </li>
+          </ul>
+        </li>
+        <li class="nav-item">
+          <i data-lucide="settings"></i>
+          <span>Settings</span>
+        </li>
+      </ul>
+
+      <div class="sidebar-footer">
+        <p>Gemini Live Agent</p>
+      </div>
+    </nav>
+
+    <div id="app">
+
+      <!-- QR Code Card (Desktop Only) -->
+      <div class="qr-card glass-card">
+        <div class="qr-header">
+          <h3>Try on Mobile</h3>
+          <p>Scan to open on your phone</p>
+        </div>
+        <div class="qr-code-container">
+          <canvas id="qr-code"></canvas>
+        </div>
+        <div class="qr-url" id="qr-url-text">Loading...</div>
+        <div class="qr-instructions">
+          <span class="instruction-step">1. Connect to same WiFi</span>
+          <span class="instruction-step">2. Scan QR code</span>
+          <span class="instruction-step">3. Say "Hey Chef"</span>
+        </div>
+      </div>
+
+      <!-- The Phone Frame -->
+      <div class="phone-frame">
+        
+        <!-- Background Video Feed: Edge to Edge inside phone -->
+        <video id="camera-feed" autoplay playsinline muted></video>
+        
+        <!-- Overlay UI Layer -->
+        <div id="ui-layer">
+
+          <!-- ========================================
+               SCREEN: HOME (Default Landing Screen)
+               ======================================== -->
+          <div id="home-screen" class="screen active">
+
+            <!-- Top Floating Island (Header & Status) -->
+            <header class="glass-island top-island">
+              <div class="brand">
+                <h1>Fridge-to-Feast</h1>
+                <p>Your Multimodal AI Sous-Chef</p>
+              </div>
+              <div class="status-badge" id="status-badge">
+                <div id="status-orb" class="tiny-orb disconnected"></div>
+                <span id="status-text">Ready for your command</span>
+              </div>
+            </header>
+
+            <!-- Center Stage (The Breathing AI Voice Visualizer) -->
+            <div class="center-stage">
+               <div id="ai-voice-orb" class="voice-orb idle"><div class="inner-ring"></div></div>
+            </div>
+
+            <!-- Bottom Floating Island (Controls & Transcript) -->
+            <div class="bottom-container">
+
+              <div class="transcript-box" id="transcript-container">
+                <div id="transcript-content">
+                  <p class="system-msg">Tap the button to start cooking with AI Chef.</p>
+                </div>
+              </div>
+
+              <div id="text-input-container" class="text-input-container hidden">
+                <input type="text" id="text-input" placeholder="Type ingredients or questions..." autocomplete="off">
+                <button id="send-btn" class="icon-btn action-btn"><i data-lucide="send"></i></button>
+              </div>
+
+              <div class="controls-dock">
+
+                <div class="secondary-controls">
+                  <button id="history-btn" class="pill-btn">
+                     <i data-lucide="history"></i> <span>History</span>
+                  </button>
+
+                  <button id="wake-word-btn" class="pill-btn" title="Enable hands-free voice activation">
+                     <i data-lucide="ear"></i> <span>Hey Chef</span>
+                  </button>
+
+                  <div class="modes-dropdown-wrapper">
+                    <button id="modes-toggle-btn" class="pill-btn modes-btn">
+                       <i data-lucide="plus"></i>
+                       <div class="btn-text-stack">
+                          <strong>Modes</strong>
+                          <span id="current-mode-label">Camera</span>
+                       </div>
+                    </button>
+
+                    <div id="modes-menu" class="modes-menu hidden">
+                       <button class="mode-option active" data-mode="vision"><i data-lucide="camera"></i> Camera</button>
+                       <button class="mode-option" data-mode="audio"><i data-lucide="mic"></i> Audio</button>
+                       <button class="mode-option" data-mode="text"><i data-lucide="keyboard"></i> Text Input</button>
+                    </div>
+                  </div>
+                </div>
+
+                <button id="toggle-agent-btn" class="main-action-btn">
+                  <i data-lucide="mic"></i> <span>TAP TO SPEAK</span>
+                </button>
+              </div>
+
+            </div>
+          </div> <!-- End Home Screen -->
+
+          <!-- ========================================
+               SCREEN 1: FRIDGE SCAN
+               ======================================== -->
+          <div id="scan-screen" class="screen">
+
+            <!-- Top Nav Bar with Back Button -->
+            <header class="screen-header">
+              <button id="scan-back-btn" class="back-btn">
+                <i data-lucide="arrow-left"></i>
+              </button>
+              <div class="screen-title">
+                <h2>Scan Ingredients</h2>
+                <p>Point camera at your fridge</p>
+              </div>
+              <div class="header-spacer"></div>
+            </header>
+
+            <!-- Input Mode Toggle -->
+            <div class="scan-mode-toggle">
+              <button class="scan-mode-btn active" data-scan-mode="camera">
+                <i data-lucide="camera"></i> Camera
+              </button>
+              <button class="scan-mode-btn" data-scan-mode="upload">
+                <i data-lucide="upload"></i> Upload
+              </button>
+            </div>
+
+            <!-- Camera Preview Area -->
+            <div class="camera-preview-container" id="camera-mode-container">
+              <div class="camera-preview-frame">
+                <video id="scan-camera-feed" autoplay playsinline muted></video>
+                <div class="scan-overlay">
+                  <div class="scan-corners"></div>
+                </div>
+              </div>
+              <p class="scan-hint">Point camera at your fridge or pantry</p>
+            </div>
+
+            <!-- Upload Area -->
+            <div class="upload-container hidden" id="upload-mode-container">
+              <div class="upload-dropzone" id="upload-dropzone">
+                <input type="file" id="image-upload" accept="image/*" hidden>
+                <div class="upload-placeholder" id="upload-placeholder">
+                  <i data-lucide="image-plus"></i>
+                  <p>Drag & drop an image here</p>
+                  <span>or click to browse</span>
+                </div>
+                <div class="upload-preview hidden" id="upload-preview">
+                  <img id="uploaded-image" src="" alt="Uploaded ingredients">
+                  <button class="remove-image-btn" id="remove-image-btn">
+                    <i data-lucide="x"></i>
+                  </button>
+                </div>
+              </div>
+              <p class="scan-hint">Upload a photo of your fridge or ingredients</p>
+            </div>
+
+            <!-- Detected Ingredients Section -->
+            <div class="detected-section glass-island">
+              <h3><i data-lucide="sparkles"></i> Detected Ingredients</h3>
+              <div id="detected-ingredients" class="ingredients-chips">
+                <span class="ingredient-chip placeholder">Scanning...</span>
+              </div>
+            </div>
+
+            <!-- Scan Actions -->
+            <div class="scan-actions">
+              <button id="get-recipes-btn" class="main-action-btn">
+                <i data-lucide="chef-hat"></i> <span>GET RECIPES</span>
+              </button>
+              <button id="cancel-scan-btn" class="secondary-btn">
+                Cancel
+              </button>
+            </div>
+
+          </div> <!-- End Scan Screen -->
+
+          <!-- ========================================
+               SCREEN 2: RECIPE SUGGESTIONS (Shared)
+               ======================================== -->
+          <div id="suggestions-screen" class="screen">
+
+            <!-- Top Nav Bar -->
+            <header class="screen-header">
+              <button id="suggestions-back-btn" class="back-btn">
+                <i data-lucide="arrow-left"></i>
+              </button>
+              <div class="screen-title">
+                <h2>Recipe Ideas</h2>
+                <p>Based on your ingredients</p>
+              </div>
+              <button id="refresh-suggestions-btn" class="icon-btn">
+                <i data-lucide="refresh-cw"></i>
+              </button>
+            </header>
+
+            <!-- Detected Ingredients Bar -->
+            <div class="ingredients-bar">
+              <span class="bar-label">Found:</span>
+              <div id="suggestion-ingredients" class="ingredients-chips-inline">
+                <span class="ingredient-chip small">🥚 Eggs</span>
+                <span class="ingredient-chip small">🍞 Bread</span>
+              </div>
+            </div>
+
+            <!-- Recipe Cards Grid -->
+            <div class="suggestions-content">
+              <div id="recipe-cards-grid" class="recipe-cards-grid">
+
+                <!-- Recipe Card 1 -->
+                <div class="recipe-card" data-recipe-id="1">
+                  <div class="card-image">
+                    <div class="card-badge">95% match</div>
+                  </div>
+                  <div class="card-content">
+                    <h4>French Toast</h4>
+                    <p>Classic breakfast favorite</p>
+                    <div class="card-meta">
+                      <span><i data-lucide="clock"></i> 15 min</span>
+                      <span><i data-lucide="flame"></i> Easy</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Recipe Card 2 -->
+                <div class="recipe-card" data-recipe-id="2">
+                  <div class="card-image">
+                    <div class="card-badge">90% match</div>
+                  </div>
+                  <div class="card-content">
+                    <h4>Egg Sandwich</h4>
+                    <p>Quick and filling</p>
+                    <div class="card-meta">
+                      <span><i data-lucide="clock"></i> 10 min</span>
+                      <span><i data-lucide="flame"></i> Easy</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Recipe Card 3 -->
+                <div class="recipe-card" data-recipe-id="3">
+                  <div class="card-image">
+                    <div class="card-badge">85% match</div>
+                  </div>
+                  <div class="card-content">
+                    <h4>Scrambled Eggs on Toast</h4>
+                    <p>Simple and delicious</p>
+                    <div class="card-meta">
+                      <span><i data-lucide="clock"></i> 8 min</span>
+                      <span><i data-lucide="flame"></i> Easy</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Recipe Card 4 -->
+                <div class="recipe-card" data-recipe-id="4">
+                  <div class="card-image">
+                    <div class="card-badge">80% match</div>
+                  </div>
+                  <div class="card-content">
+                    <h4>Egg in a Hole</h4>
+                    <p>Fun twist on breakfast</p>
+                    <div class="card-meta">
+                      <span><i data-lucide="clock"></i> 12 min</span>
+                      <span><i data-lucide="flame"></i> Easy</span>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+
+            <!-- Voice Hint -->
+            <div class="voice-hint">
+              <i data-lucide="mic"></i>
+              <span>Say a recipe name to select, or tap a card</span>
+            </div>
+
+          </div> <!-- End Suggestions Screen -->
+
+          <!-- ========================================
+               SCREEN 3: RECIPE RESULT
+               ======================================== -->
+          <div id="recipe-screen" class="screen">
+
+            <!-- Top Nav Bar -->
+            <header class="screen-header">
+              <button id="recipe-back-btn" class="back-btn">
+                <i data-lucide="arrow-left"></i>
+              </button>
+              <div class="screen-title">
+                <h2 id="recipe-title">Recipe</h2>
+              </div>
+              <button id="save-recipe-btn" class="icon-btn">
+                <i data-lucide="heart"></i>
+              </button>
+            </header>
+
+            <!-- Recipe Content -->
+            <div class="recipe-content">
+
+              <!-- Recipe Image -->
+              <div class="recipe-image-container">
+                <div id="recipe-image" class="recipe-image">
+                  <i data-lucide="utensils"></i>
+                </div>
+              </div>
+
+              <!-- Recipe Meta -->
+              <div class="recipe-meta">
+                <span class="meta-badge"><i data-lucide="clock"></i> <span id="recipe-time">15 min</span></span>
+                <span class="meta-badge"><i data-lucide="flame"></i> <span id="recipe-difficulty">Easy</span></span>
+              </div>
+
+              <!-- Ingredients -->
+              <div class="recipe-section glass-island">
+                <h3><i data-lucide="list"></i> Ingredients</h3>
+                <ul id="recipe-ingredients" class="ingredients-list">
+                  <li><span class="ingredient-icon">🥚</span> Eggs</li>
+                  <li><span class="ingredient-icon">🍅</span> Tomatoes x2</li>
+                  <li><span class="ingredient-icon">🧄</span> Garlic</li>
+                </ul>
+              </div>
+
+              <!-- Directions -->
+              <div class="recipe-section glass-island">
+                <h3><i data-lucide="list-ordered"></i> Directions</h3>
+                <ol id="recipe-directions" class="directions-list">
+                  <li>Heat oil in a pan.</li>
+                  <li>Add minced garlic & sauté until golden.</li>
+                  <li>Pour in the beaten eggs and stir until nearly set.</li>
+                  <li>Add chopped tomatoes & cook for a few minutes.</li>
+                </ol>
+              </div>
+
+            </div>
+
+            <!-- Recipe Actions -->
+            <div class="recipe-actions">
+              <button id="cook-mode-btn" class="main-action-btn">
+                <i data-lucide="chef-hat"></i> <span>COOK MODE</span>
+              </button>
+            </div>
+
+          </div> <!-- End Recipe Screen -->
+
+          <!-- ========================================
+               SCREEN 3: COOK MODE
+               ======================================== -->
+          <div id="cook-screen" class="screen">
+
+            <!-- Top Nav Bar -->
+            <header class="screen-header">
+              <button id="cook-back-btn" class="back-btn">
+                <i data-lucide="arrow-left"></i>
+              </button>
+              <div class="screen-title">
+                <h2><i data-lucide="chef-hat"></i> Cook Mode</h2>
+              </div>
+              <div class="step-indicator">
+                <span id="current-step-num">1</span> / <span id="total-steps">4</span>
+              </div>
+            </header>
+
+            <!-- Step Progress Bar -->
+            <div class="step-progress">
+              <div id="step-progress-bar" class="progress-bar" style="width: 25%;"></div>
+            </div>
+
+            <!-- Current Step Display -->
+            <div class="cook-step-container">
+              <div class="current-step glass-island">
+                <span class="step-number" id="step-badge">1</span>
+                <p class="step-instruction" id="current-step-text">Heat oil in a pan</p>
+              </div>
+
+              <div class="next-step-preview">
+                <span>Next:</span>
+                <p id="next-step-text">Add minced garlic & sauté until golden</p>
+              </div>
+            </div>
+
+            <!-- All Steps Checklist -->
+            <div class="steps-checklist glass-island">
+              <h3>All Steps</h3>
+              <ul id="cook-steps-list" class="cook-steps">
+                <li class="step-item active" data-step="1">
+                  <span class="step-check"><i data-lucide="circle"></i></span>
+                  <span>Heat oil in a pan</span>
+                </li>
+                <li class="step-item" data-step="2">
+                  <span class="step-check"><i data-lucide="circle"></i></span>
+                  <span>Add minced garlic & sauté until golden</span>
+                </li>
+                <li class="step-item" data-step="3">
+                  <span class="step-check"><i data-lucide="circle"></i></span>
+                  <span>Pour in the beaten eggs and stir</span>
+                </li>
+                <li class="step-item" data-step="4">
+                  <span class="step-check"><i data-lucide="circle"></i></span>
+                  <span>Add chopped tomatoes & cook</span>
+                </li>
+              </ul>
+            </div>
+
+            <!-- Ingredients Reference -->
+            <div class="cook-ingredients">
+              <div id="cook-ingredients-chips" class="ingredients-chips">
+                <span class="ingredient-chip">🥚 Eggs</span>
+                <span class="ingredient-chip">🍅 Tomatoes x2</span>
+                <span class="ingredient-chip">🧄 Garlic</span>
+              </div>
+            </div>
+
+            <!-- Cook Navigation -->
+            <div class="cook-navigation">
+              <button id="prev-step-btn" class="nav-btn" disabled>
+                <i data-lucide="arrow-left"></i> Back
+              </button>
+              <button id="next-step-btn" class="nav-btn primary">
+                Next <i data-lucide="arrow-right"></i>
+              </button>
+            </div>
+
+          </div> <!-- End Cook Screen -->
+
+        </div> <!-- End UI Layer -->
+      </div> <!-- End Phone Frame -->
+    </div> <!-- End App -->
+    
+    <script type="module" src="/main.js"></script>
+  </body>
+</html>
