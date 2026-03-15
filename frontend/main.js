@@ -1309,25 +1309,6 @@ function simulateIngredientDetection() {
   }, 800);
 }
 
-/**
- * Add detected ingredient
- */
-function addDetectedIngredient(icon, name) {
-  const ingredientsContainer = document.getElementById('detected-ingredients');
-
-  // Remove placeholder if exists
-  const placeholder = ingredientsContainer.querySelector('.placeholder');
-  if (placeholder) placeholder.remove();
-
-  const ingredient = { icon, name };
-  detectedIngredients.push(ingredient);
-
-  const chip = document.createElement('span');
-  chip.className = 'ingredient-chip';
-  chip.innerHTML = `${icon} ${name}`;
-  ingredientsContainer.appendChild(chip);
-}
-
 // ====================================================
 // SUGGESTIONS SCREEN LOGIC
 // ====================================================
@@ -1565,10 +1546,8 @@ function showRecipesLoading() {
   } else {
     grid.innerHTML = `
       <div id="recipes-loading" class="recipes-loading">
-        <div class="thinking-orb">
-          <div class="orb-glow"></div>
-          <div class="orb-core"></div>
-          <div class="orb-ring"></div>
+        <div class="voice-orb mini thinking">
+          <div class="inner-ring"></div>
         </div>
         <p>Chef is thinking of recipes...</p>
       </div>
@@ -1668,23 +1647,6 @@ function initRecipeScreen() {
   directionsList.innerHTML = currentRecipe.directions.map(step =>
     `<li>${step}</li>`
   ).join('');
-}
-
-/**
- * Set recipe data from AI response
- */
-function setRecipeFromAI(recipeText) {
-  // Parse AI response into structured recipe
-  // This is a simplified parser - enhance based on actual AI output
-  currentRecipe = {
-    title: 'AI Generated Recipe',
-    time: '20 min',
-    difficulty: 'Medium',
-    ingredients: detectedIngredients.length > 0 ? detectedIngredients : [
-      { icon: '🥘', name: 'Ingredients from your fridge' }
-    ],
-    directions: recipeText.split(/\d+\.\s*/).filter(s => s.trim().length > 0)
-  };
 }
 
 // ====================================================
@@ -2035,7 +1997,7 @@ function initUploadHandlers() {
 function handleImageUpload(file, uploadedImageEl, uploadPlaceholder, uploadPreview) {
   const reader = new FileReader();
 
-  reader.onload = (e) => {
+  reader.onload = async (e) => {
     uploadedImageData = e.target.result;
 
     // Show preview
@@ -2043,19 +2005,62 @@ function handleImageUpload(file, uploadedImageEl, uploadPlaceholder, uploadPrevi
     if (uploadPlaceholder) uploadPlaceholder.classList.add('hidden');
     if (uploadPreview) uploadPreview.classList.remove('hidden');
 
-    // Update detected ingredients with demo data
-    updateDetectedIngredients([
-      { icon: '🥚', name: 'Eggs' },
-      { icon: '🧀', name: 'Cheese' },
-      { icon: '🥛', name: 'Milk' },
-      { icon: '🧈', name: 'Butter' }
-    ]);
+    // Show loading state
+    const container = document.getElementById('detected-ingredients');
+    if (container) {
+      container.innerHTML = '<span class="ingredient-chip detecting"><i data-lucide="loader" class="spin"></i> Detecting ingredients...</span>';
+      refreshIcons();
+    }
 
-    // Re-render icons
+    // Call Gemini API to detect ingredients
+    try {
+      const detected = await detectIngredientsFromImage(uploadedImageData);
+
+      if (detected && detected.ingredients && detected.ingredients.length > 0) {
+        updateDetectedIngredients(detected.ingredients);
+        detectedIngredients = detected.ingredients;
+        console.log(`Detected ${detected.ingredients.length} ingredients (${detected.confidence}% confidence)`);
+      } else {
+        updateDetectedIngredients([]);
+        console.log('No ingredients detected');
+      }
+    } catch (error) {
+      console.error('Detection failed:', error);
+      // Fallback to demo data if API fails
+      const fallbackIngredients = [
+        { icon: '🥘', name: 'Unable to detect - try another image' }
+      ];
+      updateDetectedIngredients(fallbackIngredients);
+    }
+
     refreshIcons();
   };
 
   reader.readAsDataURL(file);
+}
+
+/**
+ * Detect ingredients from image using Gemini Vision API
+ */
+async function detectIngredientsFromImage(imageData) {
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/detect-ingredients`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ image: imageData }),
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to detect ingredients');
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('Error detecting ingredients:', error);
+    return null;
+  }
 }
 
 function clearUploadedImage(uploadedImageEl, imageUploadInput, uploadPlaceholder, uploadPreview) {

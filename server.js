@@ -5,7 +5,7 @@ const { WebSocket, WebSocketServer } = require('ws');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 
 const app = express();
-app.use(express.json());
+app.use(express.json({ limit: '10mb' })); // Increased for image uploads
 
 // Enable CORS for frontend
 app.use((req, res, next) => {
@@ -33,7 +33,7 @@ app.post('/api/recipes', async (req, res) => {
 
         const prompt = `You are a professional chef. Given these ingredients: ${ingredients.join(', ')}
 
-Generate exactly 4 recipes that can be made with these ingredients. For each recipe, provide:
+Generate exactly 6 recipes that can be made with these ingredients. For each recipe, provide:
 - A creative but simple title
 - Short description (under 10 words)
 - Cooking time
@@ -75,6 +75,66 @@ IMPORTANT: Respond ONLY with valid JSON in this exact format, no other text:
     } catch (error) {
         console.error('Recipe generation error:', error);
         res.status(500).json({ error: 'Failed to generate recipes', details: error.message });
+    }
+});
+
+// Ingredient detection from image endpoint
+app.post('/api/detect-ingredients', async (req, res) => {
+    try {
+        const { image } = req.body;
+
+        if (!image) {
+            return res.status(400).json({ error: 'Please provide a base64 image' });
+        }
+
+        // Remove data URL prefix if present
+        const base64Data = image.replace(/^data:image\/\w+;base64,/, '');
+
+        const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
+
+        const prompt = `You are analyzing an image of food items, ingredients, or a fridge/pantry.
+
+Identify ALL food ingredients you can see in this image. Be thorough and identify as many items as possible.
+
+For each ingredient found, provide:
+- An appropriate food emoji icon
+- The ingredient name (with quantity if visible, e.g., "Eggs x6", "Tomatoes x3")
+
+IMPORTANT: Respond ONLY with valid JSON in this exact format, no other text:
+{
+  "ingredients": [
+    { "icon": "🥚", "name": "Eggs x6" },
+    { "icon": "🥛", "name": "Milk" },
+    { "icon": "🧀", "name": "Cheese" }
+  ],
+  "confidence": 85
+}
+
+The "confidence" field should be your estimated accuracy percentage (0-100) for the detection.
+If you cannot identify any food items, return: { "ingredients": [], "confidence": 0 }`;
+
+        const result = await model.generateContent([
+            prompt,
+            {
+                inlineData: {
+                    mimeType: 'image/jpeg',
+                    data: base64Data
+                }
+            }
+        ]);
+
+        const response = await result.response;
+        let text = response.text();
+
+        // Clean up the response - remove markdown code blocks if present
+        text = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+
+        const detected = JSON.parse(text);
+        console.log(`Detected ${detected.ingredients.length} ingredients with ${detected.confidence}% confidence`);
+        res.json(detected);
+    } catch (error) {
+        console.error('Ingredient detection error:', error);
+        res.status(500).json({ error: 'Failed to detect ingredients', details: error.message });
     }
 });
 

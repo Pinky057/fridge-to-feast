@@ -47,6 +47,13 @@
   gap: 0.75rem;
   padding: 1.5rem;
   border-bottom: 1px solid var(--glass-border);
+  text-decoration: none;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.sidebar-logo:hover {
+  opacity: 0.85;
 }
 
 .sidebar-logo .logo-icon {
@@ -1830,18 +1837,18 @@ body.tablet-view .step-instruction {
 
 .ingredients-bar {
   display: flex;
-  align-items: center;
-  gap: 0.75rem;
+  flex-direction: column;
+  gap: 0.5rem;
   padding: 0.75rem 1rem;
   background: rgba(255, 255, 255, 0.04);
   border-radius: 16px;
   margin-bottom: 1.25rem;
-  overflow-x: auto;
-  scrollbar-width: none;
+  width: 100%;
+  box-sizing: border-box;
 }
 
-.ingredients-bar::-webkit-scrollbar {
-  display: none;
+.ingredients-bar .bar-label {
+  flex-shrink: 0;
 }
 
 .bar-label {
@@ -1856,7 +1863,8 @@ body.tablet-view .step-instruction {
 .ingredients-chips-inline {
   display: flex;
   gap: 0.5rem;
-  flex-wrap: nowrap;
+  flex-wrap: wrap;
+  width: 100%;
 }
 
 .ingredient-chip.small {
@@ -3058,4 +3066,43 @@ body.tablet-view .step-instruction {
 
 .quick-access-row {
   gap: 0.75rem;
+}
+
+/* Mini Voice Orb for Loading States */
+.voice-orb.mini {
+  width: 100px;
+  height: 100px;
+  margin-bottom: 1rem;
+}
+
+.voice-orb.mini::before,
+.voice-orb.mini::after,
+.voice-orb.mini .inner-ring {
+  inset: -8px;
+  border-width: 6px;
+}
+
+.voice-orb.mini .inner-ring {
+  inset: 0;
+  border-width: 4px;
+}
+
+.recipes-loading {
+  flex-direction: column;
+}
+
+/* Detecting ingredients loading state */
+.ingredient-chip.detecting {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(0, 242, 254, 0.1);
+  border-color: rgba(0, 242, 254, 0.3);
+  color: var(--accent-cyan);
+}
+
+.ingredient-chip.detecting svg {
+  width: 14px;
+  height: 14px;
+  animation: spin 1s linear infinite;
 }
