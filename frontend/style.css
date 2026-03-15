@@ -1145,8 +1145,8 @@ body.tablet-view .step-instruction {
 /* --- Text Input Additions --- */
 .text-input-container {
   display: flex;
-  align-items: center;
-  gap: 0.8rem;
+  flex-direction: column;
+  gap: 0.5rem;
   width: 100%;
   position: relative;
   z-index: 100;
@@ -1162,12 +1162,65 @@ body.tablet-view .step-instruction {
   border-radius: 24px;
 
   /* Un-congested padding */
-  padding: 0.6rem 0.6rem 0.6rem 1.4rem;
+  padding: 0.8rem 0.8rem 0.8rem 1rem;
   min-height: 64px;
-  box-shadow:
-    0 10px 30px rgba(0, 0, 0, 0.5),
-    inset 0 1px 0 rgba(255, 255, 255, 0.1);
-  transition: all 0.3s ease;
+}
+
+.text-input-row {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  width: 100%;
+}
+
+/* Ingredient Tags */
+.ingredient-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.ingredient-tags:empty {
+  display: none;
+}
+
+.ingredient-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.35rem 0.6rem 0.35rem 0.8rem;
+  background: linear-gradient(135deg, rgba(0, 242, 254, 0.2), rgba(121, 40, 202, 0.2));
+  border: 1px solid rgba(0, 242, 254, 0.3);
+  border-radius: 20px;
+  font-size: 0.85rem;
+  color: white;
+  animation: tagPop 0.2s ease-out;
+}
+
+@keyframes tagPop {
+  0% { transform: scale(0.8); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.ingredient-tag .tag-remove {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  background: rgba(255, 255, 255, 0.15);
+  border: none;
+  border-radius: 50%;
+  color: rgba(255, 255, 255, 0.7);
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1;
+  transition: all 0.2s;
+}
+
+.ingredient-tag .tag-remove:hover {
+  background: rgba(255, 71, 87, 0.4);
+  color: white;
 }
 
 .text-input-container.hidden {
@@ -2359,8 +2412,7 @@ body.tablet-view .step-instruction {
 .steps-checklist {
   padding: 1rem;
   margin-bottom: 0.5rem;
-  flex: 1;
-  min-height: 150px;
+  max-height: 180px;
   overflow-y: auto;
 }
 
@@ -2439,10 +2491,12 @@ body.tablet-view .step-instruction {
 
 /* Cook Ingredients Reference */
 .cook-ingredients {
-  margin-bottom: 1rem;
-  padding: 1rem;
+  margin-bottom: 0.5rem;
+  padding: 0.75rem;
   background: rgba(255, 255, 255, 0.03);
-  border-radius: 16px;
+  border-radius: 12px;
+  max-height: 120px;
+  overflow-y: auto;
 }
 
 .cook-ingredients .ingredients-chips {
@@ -2457,11 +2511,16 @@ body.tablet-view .step-instruction {
   border-color: rgba(0, 242, 254, 0.15);
 }
 
-/* Cook Navigation */
+/* Cook Navigation - Sticky at bottom */
 .cook-navigation {
   display: flex;
   gap: 1rem;
-  padding-top: 0.5rem;
+  padding: 1rem 0;
+  position: sticky;
+  bottom: 0;
+  background: linear-gradient(to top, var(--bg-dark) 60%, transparent);
+  margin-top: auto;
+  z-index: 10;
 }
 
 .nav-btn {

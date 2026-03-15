@@ -5,9 +5,31 @@
 
 ---
 
+## BLOCKERS
+
+### 1. Google Cloud Billing (URGENT)
+- [ ] Set up sister's NSU university account for Google Cloud
+- [ ] Enable billing with education credits (no credit card needed)
+- [ ] Add billing to project OR deploy from her account
+- **Why:** Cloud Run requires billing enabled (free tier, won't charge)
+
+### 2. Gemini API Rate Limit
+- **Status:** Recipe generation API rate limited (429 error)
+- **Resets:** ~2:00 PM GMT+6 tomorrow (March 16)
+- **Note:** Voice/camera (Live API) still works!
+
+---
+
 ## Day 1 (March 15) - TODAY
 
-### Deployment
+### Completed Today
+- [x] Tag input system for ingredients (comma separated chips)
+- [x] Rate limit error message (user-friendly)
+- [x] Cook screen navigation fixed (sticky buttons)
+- [x] Network access for mobile testing
+- [x] Dynamic URLs for local network
+
+### Deployment (after billing fixed)
 - [ ] Deploy to Google Cloud Run (`./deploy.sh`)
 - [ ] Test deployed version thoroughly
 - [ ] Get live URL for submission
@@ -23,6 +45,10 @@
 ---
 
 ## Day 2 (March 16) - TOMORROW
+
+### After 2pm (Rate limit resets)
+- [ ] Test full recipe generation flow
+- [ ] Test voice/camera on deployed HTTPS version
 
 ### Demo Video (under 4 minutes - REQUIRED)
 - [ ] Record demo video
@@ -45,6 +71,7 @@
 - [ ] Publish content with **#GeminiLiveAgentChallenge** (blog/video/tweet)
 - [x] Infrastructure-as-Code deployment (deploy.sh - DONE!)
 - [ ] Join a Google Developer Group (GDG) - free, 2 minutes
+- [ ] Add Bangla language support (if time permits after submission ready)
 
 ---
 

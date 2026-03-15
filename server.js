@@ -209,7 +209,8 @@ wss.on('connection', (ws) => {
 });
 
 const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => {
+server.listen(PORT, '0.0.0.0', () => {
     console.log(`📡 Backend server listening on port ${PORT}`);
-    console.log(`Make sure your Vite frontend is pointing to ws://localhost:${PORT}`);
+    console.log(`Local:   http://localhost:${PORT}`);
+    console.log(`Network: http://192.168.68.61:${PORT}`);
 });

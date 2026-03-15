@@ -39,9 +39,10 @@ let localStream = null;
 let ws = null;
 let frameInterval = null;
 let currentMode = 'vision'; // 'vision', 'audio', or 'text'
-// Dynamic WebSocket URL - uses wss:// in production, ws:// locally
-const BACKEND_WS_URL = location.hostname === 'localhost'
-  ? 'ws://localhost:3000'
+// Dynamic WebSocket URL - uses wss:// in production, ws:// locally/network
+const isLocalDev = location.hostname === 'localhost' || location.hostname.startsWith('192.168.');
+const BACKEND_WS_URL = isLocalDev
+  ? `ws://${location.hostname}:3000`
   : `wss://${location.host}`;
 
 // Audio State
@@ -893,20 +894,62 @@ modeOptions.forEach((btn) => {
     };
 });
 
+// Ingredient tags array
+let ingredientTags = [];
+const ingredientTagsContainer = document.getElementById('ingredient-tags');
+
+// Add ingredient tag
+function addIngredientTag(name) {
+  const trimmed = name.trim();
+  if (!trimmed || ingredientTags.includes(trimmed.toLowerCase())) return;
+
+  ingredientTags.push(trimmed.toLowerCase());
+
+  const tag = document.createElement('span');
+  tag.className = 'ingredient-tag';
+  tag.innerHTML = `
+    ${trimmed}
+    <button class="tag-remove" onclick="removeIngredientTag(this, '${trimmed.toLowerCase()}')">&times;</button>
+  `;
+  ingredientTagsContainer.appendChild(tag);
+}
+
+// Remove ingredient tag
+window.removeIngredientTag = function(btn, name) {
+  ingredientTags = ingredientTags.filter(t => t !== name);
+  btn.parentElement.remove();
+};
+
+// Clear all tags
+function clearIngredientTags() {
+  ingredientTags = [];
+  ingredientTagsContainer.innerHTML = '';
+}
+
 // Text Input Sending Logic
 function sendText() {
-    const text = textInput.value.trim();
-    if (!text) return;
+    // Add any remaining text as a tag
+    const remainingText = textInput.value.trim().replace(/,/g, '');
+    if (remainingText) {
+        addIngredientTag(remainingText);
+        textInput.value = '';
+    }
 
-    appendTranscript('user', text);
-    textInput.value = '';
+    // Use tags if available, otherwise return
+    if (ingredientTags.length === 0) return;
+
+    const ingredients = [...ingredientTags];
+    appendTranscript('user', ingredients.join(', '));
+
+    // Clear tags after sending
+    clearIngredientTags();
 
     // If connected to backend, send via WebSocket
     if (ws && ws.readyState === WebSocket.OPEN) {
         const message = {
             clientContent: {
                 turns: [{
-                    parts: [{ text: text }],
+                    parts: [{ text: ingredients.join(', ') }],
                     role: "user"
                 }],
                 turnComplete: true
@@ -915,8 +958,7 @@ function sendText() {
         ws.send(JSON.stringify(message));
         updateStatus('thinking', 'Processing recipe...');
     } else {
-        // Parse ingredients from text and call Gemini API
-        const ingredients = text.split(/[,\s]+/).filter(w => w.length > 2);
+        // Use ingredient tags for Gemini API
         detectedIngredients = ingredients.map(name => ({
             icon: '🥘',
             name: name.charAt(0).toUpperCase() + name.slice(1)
@@ -931,7 +973,7 @@ function sendText() {
 
             const recipes = await fetchRecipesFromAPI(detectedIngredients);
 
-            if (recipes) {
+            if (recipes && !recipes.error && recipes.length > 0) {
                 // Add image URLs to recipes
                 recipes.forEach((recipe, index) => {
                     recipe.imageUrl = FOOD_IMAGES[index % FOOD_IMAGES.length];
@@ -940,16 +982,44 @@ function sendText() {
                 renderRecipeCards(recipes);
                 appendTranscript('ai', `Found ${recipes.length} recipes for you!`);
             } else {
-                renderRecipeCards(null);
-                appendTranscript('ai', `Sorry, couldn't generate recipes. Please try again.`);
+                renderRecipeCards(recipes); // Pass error info to render
+                if (recipes && recipes.error === 'rate_limit') {
+                    appendTranscript('ai', `Rate limit reached. Please wait and try again.`);
+                } else {
+                    appendTranscript('ai', `Sorry, couldn't generate recipes. Please try again.`);
+                }
             }
         }, 500);
     }
 }
 
 sendBtn.addEventListener('click', sendText);
-textInput.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') sendText();
+
+textInput.addEventListener('keydown', (e) => {
+  // Add tag on comma or Enter (if there's text)
+  if (e.key === ',' || e.key === 'Enter') {
+    const value = textInput.value.trim().replace(/,/g, '');
+
+    if (value) {
+      e.preventDefault();
+      addIngredientTag(value);
+      textInput.value = '';
+    }
+
+    // On Enter with tags, send them
+    if (e.key === 'Enter' && ingredientTags.length > 0) {
+      sendText();
+    }
+  }
+
+  // Remove last tag on Backspace if input is empty
+  if (e.key === 'Backspace' && textInput.value === '' && ingredientTags.length > 0) {
+    const lastTag = ingredientTagsContainer.lastElementChild;
+    if (lastTag) {
+      ingredientTags.pop();
+      lastTag.remove();
+    }
+  }
 });
 
 // Prevent text input clicks from bubbling
@@ -1319,9 +1389,9 @@ function simulateIngredientDetection() {
 // Dynamic recipes from Gemini API
 let generatedRecipes = [];
 
-// Dynamic API URL - uses https in production, http locally
-const API_BASE_URL = location.hostname === 'localhost'
-  ? 'http://localhost:3000'
+// Dynamic API URL - uses https in production, http locally/network
+const API_BASE_URL = isLocalDev
+  ? `http://${location.hostname}:3000`
   : '';
 
 // Curated food images for recipes
@@ -1455,15 +1525,20 @@ async function fetchRecipesFromAPI(ingredients) {
       body: JSON.stringify({ ingredients: ingredientNames }),
     });
 
+    const data = await response.json();
+
     if (!response.ok) {
-      throw new Error('Failed to fetch recipes');
+      // Check for rate limit error
+      if (response.status === 429 || (data.details && data.details.includes('429'))) {
+        return { error: 'rate_limit' };
+      }
+      return { error: 'failed' };
     }
 
-    const data = await response.json();
     return data.recipes || [];
   } catch (error) {
     console.error('Error fetching recipes:', error);
-    return null;
+    return { error: 'failed' };
   }
 }
 
@@ -1482,10 +1557,17 @@ function renderRecipeCards(recipes) {
   const existingCards = grid.querySelectorAll('.recipe-card');
   existingCards.forEach(card => card.remove());
 
-  if (!recipes || recipes.length === 0) {
+  // Handle errors
+  if (!recipes || recipes.error || recipes.length === 0) {
+    let errorMessage = "Couldn't generate recipes. Please try again.";
+
+    if (recipes && recipes.error === 'rate_limit') {
+      errorMessage = "Rate limit reached. Please wait a moment and try again.";
+    }
+
     grid.innerHTML = `
       <div class="recipes-error">
-        <p>Couldn't generate recipes. Please try again.</p>
+        <p>${errorMessage}</p>
         <button onclick="goBack()" class="btn-secondary">Go Back</button>
       </div>
     `;
@@ -1883,7 +1965,7 @@ document.getElementById('get-recipes-btn')?.addEventListener('click', async () =
 
   const recipes = await fetchRecipesFromAPI(ingredients);
 
-  if (recipes) {
+  if (recipes && !recipes.error && recipes.length > 0) {
     // Add image URLs to recipes
     recipes.forEach((recipe, index) => {
       recipe.imageUrl = FOOD_IMAGES[index % FOOD_IMAGES.length];
@@ -1891,7 +1973,7 @@ document.getElementById('get-recipes-btn')?.addEventListener('click', async () =
     generatedRecipes = recipes;
     renderRecipeCards(recipes);
   } else {
-    renderRecipeCards(null);
+    renderRecipeCards(recipes); // Pass error info
   }
 });
 
