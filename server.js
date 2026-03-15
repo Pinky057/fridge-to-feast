@@ -138,8 +138,8 @@ If you cannot identify any food items, return: { "ingredients": [], "confidence"
     }
 });
 
-// In production, we would serve static files built by Vite
-// app.use(express.static('frontend/dist'));
+// Serve static files from frontend directory
+app.use(express.static('frontend'));
 
 const GEMINI_WS_URL = `wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1alpha.GenerativeService.BidiGenerateContent?key=${process.env.GEMINI_API_KEY}`;
 

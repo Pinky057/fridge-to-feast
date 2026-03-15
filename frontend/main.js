@@ -39,7 +39,10 @@ let localStream = null;
 let ws = null;
 let frameInterval = null;
 let currentMode = 'vision'; // 'vision', 'audio', or 'text'
-const BACKEND_WS_URL = 'ws://localhost:3000';
+// Dynamic WebSocket URL - uses wss:// in production, ws:// locally
+const BACKEND_WS_URL = location.hostname === 'localhost'
+  ? 'ws://localhost:3000'
+  : `wss://${location.host}`;
 
 // Audio State
 let audioContext = null;
@@ -1316,7 +1319,10 @@ function simulateIngredientDetection() {
 // Dynamic recipes from Gemini API
 let generatedRecipes = [];
 
-const API_BASE_URL = 'http://localhost:3000';
+// Dynamic API URL - uses https in production, http locally
+const API_BASE_URL = location.hostname === 'localhost'
+  ? 'http://localhost:3000'
+  : '';
 
 // Curated food images for recipes
 const FOOD_IMAGES = [
