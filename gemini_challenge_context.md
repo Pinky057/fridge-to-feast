@@ -12,7 +12,8 @@ The user points their phone camera at their fridge, and a conversational AI "Che
 
 **Competition:** [Gemini Live Agent Challenge on Devpost](https://geminiliveagentchallenge.devpost.com/)
 **Category:** Live Agents 🗣️
-**Deadline:** ~6 days remaining
+**Deadline:** March 17, 2026 @ 6:00am GMT+6 (2 days remaining)
+**Participants:** 10,846 | **Prize Pool:** $80,000
 
 ### Judging Criteria & Our Status
 
@@ -228,11 +229,23 @@ WebSocket → Base64 → Int16 PCM → Float32 → AudioBuffer → AudioContext 
 - [x] **Image Preview:** See uploaded image before processing
 - [x] **Remove Button:** Clear uploaded image and try again
 
+### AI-Powered Features (NEW)
+- [x] **Dynamic Recipe Generation:** Gemini API generates 6 unique recipes from ingredients
+- [x] **Image-Based Ingredient Detection:** Gemini Vision analyzes uploaded/camera images
+- [x] **Real Food Images:** Curated images with emoji fallbacks
+- [x] **Favorites System:** Save recipes to favorites with localStorage persistence
+- [x] **Cooking History:** Track completed recipes with timestamps
+- [x] **Completion Screen:** "Enjoy your meal!" screen after finishing all cook steps
+- [x] **Production-Ready URLs:** Dynamic WebSocket/API URLs for Cloud Run deployment
+
+### REST API Endpoints (server.js)
+- [x] `POST /api/recipes` - Generate 6 recipes from ingredient list
+- [x] `POST /api/detect-ingredients` - Analyze image for food items
+
 ### Demo Mode (Works Without API Key)
 - [x] **Text Input Demo:** Type ingredients → AI response → Suggestions screen
 - [x] **Upload Demo:** Upload image → Show detected ingredients
-- [x] **Dummy Recipe Data:** 4 sample recipes (French Toast, Egg Sandwich, etc.)
-- [x] Full flow testable: Home → Suggestions → Recipe → Cook Mode
+- [x] Full flow testable: Home → Suggestions → Recipe → Cook Mode → Complete → History
 
 ### Extras
 - [x] **QR Code:** Desktop shows QR for easy mobile testing
@@ -245,32 +258,37 @@ WebSocket → Base64 → Int16 PCM → Float32 → AudioBuffer → AudioContext 
 
 ## 🟡 What's NOT DONE (Remaining Work)
 
-### 1. 🔑 Gemini API Key (BLOCKER)
-The `.env` file needs a real `GEMINI_API_KEY` to test the full AI flow.
-Get one free at: https://aistudio.google.com/apikey
+### 1. ☁️ Google Cloud Deployment (Day 1 - TODAY)
+- [ ] Run `./deploy.sh` to deploy to Cloud Run
+- [ ] Test deployed version thoroughly
+- [ ] Get live URL for submission
+- [x] Dynamic URLs configured for production (wss://, relative API paths)
 
-**Note:** Demo mode works without API key! Use Text mode to test the full UI flow.
+### 2. 📊 Architecture Diagram (Day 1 - TODAY)
+- [ ] Create visual diagram showing:
+  - Frontend (HTML/CSS/JS)
+  - Backend (Node.js/Express)
+  - Gemini Live API (WebSocket)
+  - Gemini REST API (recipes + vision)
+  - Google Cloud Run hosting
 
-### 2. ☁️ Google Cloud Deployment
-- [ ] Test `deploy.sh` script
-- [ ] Verify Cloud Run deployment
-- [ ] Update `BACKEND_WS_URL` for production
+### 3. 🎬 Demo Video (Day 2 - TOMORROW)
+- [ ] Record under 4-minute demo
+- [ ] Show: problem → solution → live demo
+- [ ] Cover all 3 input modes (vision+voice, audio, text)
+- [ ] Show recipe generation with real ingredients
+- [ ] Show cook mode step-by-step to completion
 
-### 3. 🎬 Demo Video
-- [ ] Record 4-minute demo showing all features
-- [ ] Show wake word activation
-- [ ] Show interruption in action
-- [ ] Show camera mode identifying ingredients
-- [ ] Show text mode demo flow
+### 4. 📝 Devpost Submission (Day 2 - TOMORROW)
+- [ ] Write project description
+- [ ] Upload screenshots/GIFs
+- [ ] Add architecture diagram
+- [ ] Submit before March 17 @ 6:00am GMT+6
 
-### 4. 🎨 UI Enhancements (All Complete!)
-- [x] Recipe cards (show structured recipe from AI response)
-- [x] Detected ingredients display
-- [x] Quick suggestion chips
-- [x] Cook mode (step-by-step large text)
-- [x] Recipe Suggestions screen with 2x2 card grid
-- [x] Screen navigation with smooth slide transitions
-- [x] QR code for mobile testing
+### 5. 🎁 Bonus Points
+- [x] Infrastructure-as-Code deployment (deploy.sh)
+- [ ] Publish content with #GeminiLiveAgentChallenge
+- [ ] Join a Google Developer Group (GDG)
 
 ---
 
@@ -298,6 +316,30 @@ We've archived high-quality demonstration assets for the project:
 ---
 
 ## 📝 Recent Session Notes
+
+### Session: March 15, 2026 (Final Push)
+
+**Major Work Completed:**
+1. **Dynamic Recipe Generation** - Gemini API generates 6 unique recipes based on user ingredients
+2. **Image-Based Ingredient Detection** - Gemini Vision API analyzes photos for food items
+3. **Favorites System** - Save/remove recipes with localStorage persistence
+4. **Cooking History** - Track completed recipes with timestamps (max 20)
+5. **Completion Screen** - Celebration screen after finishing all cook steps
+6. **Real Food Images** - Curated Unsplash images with emoji fallbacks
+7. **Production URLs** - Dynamic WebSocket (wss://) and API URLs for Cloud Run
+8. **UI Improvements** - Compact cook step card, ingredient chips wrapping
+
+**Key Files Modified:**
+- `server.js` - Added `/api/recipes` and `/api/detect-ingredients` endpoints
+- `frontend/main.js` - Recipe fetching, favorites, history, image detection, dynamic URLs
+- `frontend/style.css` - Compact cook steps, ingredient chip wrapping, complete screen
+- `frontend/index.html` - Complete screen, Favorites screen, History screen
+
+**API Endpoints Added:**
+- `POST /api/recipes` - Takes `{ingredients: [...]}`, returns 6 AI-generated recipes
+- `POST /api/detect-ingredients` - Takes `{image: base64}`, returns detected ingredients
+
+---
 
 ### Session: March 11, 2026 (Evening)
 

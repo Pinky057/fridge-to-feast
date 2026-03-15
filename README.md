@@ -166,6 +166,27 @@ For desktop users or devices without cameras, the Scan screen includes an **Uplo
 
 ---
 
+## 🤖 AI-Powered Features
+
+### Dynamic Recipe Generation
+The app uses **Gemini 2.5 Flash** to generate personalized recipes based on your ingredients:
+- Enter ingredients via text, voice, or camera
+- AI generates **6 unique recipes** with match percentages
+- Each recipe includes ingredients, directions, cooking time, and difficulty
+
+### Intelligent Ingredient Detection
+Upload or photograph your fridge contents:
+- **Gemini Vision API** analyzes images for food items
+- Automatically identifies ingredients with quantities
+- Confidence score shows detection accuracy
+
+### Favorites & History
+- **Save to Favorites**: Keep your best recipes for later
+- **Cooking History**: Track completed meals with timestamps
+- Data persists locally using localStorage
+
+---
+
 ## 🎤 Real-Time Audio System
 
 The audio pipeline is built for **low-latency, interruptible conversation**:
@@ -273,6 +294,9 @@ This script automatically packages the application and deploys it as an unauthen
 | | Image Upload (Drag & Drop) | ✅ |
 | | Audio (Voice Only) | ✅ |
 | | Text Input | ✅ |
+| **AI Features** | Dynamic Recipe Generation (6 recipes) | ✅ |
+| | Image-Based Ingredient Detection | ✅ |
+| | Real Food Images with Emoji Fallbacks | ✅ |
 | **Voice** | "Hey Chef" Wake Word (Opt-in) | ✅ |
 | | Real-time Speech Recognition | ✅ |
 | | Interruption Detection | ✅ |
@@ -281,7 +305,12 @@ This script automatically packages the application and deploys it as an unauthen
 | | Recipe Suggestions (Card Grid) | ✅ |
 | | Recipe Details | ✅ |
 | | Cook Mode (Step-by-Step) | ✅ |
+| | Completion Screen | ✅ |
+| | Favorites Screen | ✅ |
+| | History Screen | ✅ |
 | | Landing Page | ✅ |
+| **Persistence** | Save to Favorites (localStorage) | ✅ |
+| | Cooking History (localStorage) | ✅ |
 | **UX** | Glassmorphism UI | ✅ |
 | | Smooth Screen Transitions | ✅ |
 | | Progress Tracking | ✅ |
@@ -290,7 +319,8 @@ This script automatically packages the application and deploys it as an unauthen
 | | Mobile/Tablet View Toggle | ✅ |
 | **Accessibility** | Voice Activation Button | ✅ |
 | | Hands-free Operation | ✅ |
-| **Demo** | Works Without API Key | ✅ |
+| **Deployment** | Infrastructure-as-Code (deploy.sh) | ✅ |
+| | Production-Ready Dynamic URLs | ✅ |
 
 ---
 
