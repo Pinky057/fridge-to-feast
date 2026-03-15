@@ -1,33 +1,69 @@
 # Fridge-to-Feast - Remaining Tasks
 
-## Priority 1: Before Submission (2 days left)
+**DEADLINE: March 17, 2026 @ 6:00am GMT+6 (2 days)**
+**Competition: 10,846 participants | $80,000 prize pool**
+
+---
+
+## Day 1 (March 15) - TODAY
 
 ### Deployment
-- [ ] Deploy to Google Cloud Run
-  - Run `./deploy.sh`
-  - Test deployed version thoroughly
-  - Get live URL for submission
+- [ ] Deploy to Google Cloud Run (`./deploy.sh`)
+- [ ] Test deployed version thoroughly
+- [ ] Get live URL for submission
 
-### Testing
+### Architecture Diagram
+- [ ] Create diagram showing:
+  - Frontend (HTML/CSS/JS)
+  - Backend (Node.js/Express)
+  - Gemini Live API (WebSocket)
+  - Gemini REST API (recipes + vision)
+  - Google Cloud Run hosting
+
+---
+
+## Day 2 (March 16) - TOMORROW
+
+### Demo Video (under 4 minutes - REQUIRED)
+- [ ] Record demo video
+- [ ] Show: problem → solution → live demo
+- [ ] Cover all 3 input modes (vision+voice, audio, text)
+- [ ] Show recipe generation flow
+- [ ] Show cook mode step-by-step
+
+### Devpost Submission
+- [ ] Write project description
+- [ ] Upload screenshots/GIFs
+- [ ] Add architecture diagram
+- [ ] Link GitHub repo
+- [ ] Submit before deadline
+
+---
+
+## Bonus Points (Extra Credit)
+
+- [ ] Publish content with **#GeminiLiveAgentChallenge** (blog/video/tweet)
+- [x] Infrastructure-as-Code deployment (deploy.sh - DONE!)
+- [ ] Join a Google Developer Group (GDG) - free, 2 minutes
+
+---
+
+## Target Prizes
+
+| Prize | Amount | Our Advantage |
+|-------|--------|---------------|
+| Best of Live Agents | $10,000 | Gemini Live API with voice+video |
+| Best Multimodal UX | $5,000 | 3 input modes + image detection |
+| Grand Prize | $25,000 | Strong multimodal (40% weight) |
+
+---
+
+## Testing Checklist
 - [ ] Test camera mode (vision + voice)
 - [ ] Test audio-only mode
 - [ ] Test text input mode
 - [ ] Test on mobile device (scan QR code)
-- [ ] Test "Hey Chef" wake word activation
-- [ ] Test voice interruption feature
 - [ ] Verify all 3 input modes work end-to-end
-
-### Demo Video
-- [ ] Record 2-3 minute demo video
-- [ ] Show: problem → solution → live demo
-- [ ] Cover all 3 input modes
-- [ ] Show recipe generation flow
-- [ ] Show cook mode step-by-step
-
-### Submission
-- [ ] Write Devpost description
-- [ ] Upload screenshots/GIFs
-- [ ] Submit before deadline
 
 ---
 
