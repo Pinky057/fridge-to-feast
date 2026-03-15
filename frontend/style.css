@@ -1879,6 +1879,65 @@ body.tablet-view .step-instruction {
   gap: 1rem;
 }
 
+/* Loading State */
+.recipes-loading {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 1rem;
+  color: var(--text-secondary);
+  gap: 1rem;
+}
+
+.recipes-loading i {
+  width: 48px;
+  height: 48px;
+  color: var(--accent-cyan);
+}
+
+.recipes-loading .spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.recipes-loading p {
+  font-size: 1rem;
+  text-align: center;
+}
+
+/* Error State */
+.recipes-error {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1rem;
+  color: var(--text-secondary);
+  gap: 1rem;
+  text-align: center;
+}
+
+.recipes-error .btn-secondary {
+  padding: 0.75rem 1.5rem;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.recipes-error .btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
 .recipe-card {
   background: var(--glass-bg);
   backdrop-filter: blur(20px);
@@ -2292,7 +2351,7 @@ body.tablet-view .step-instruction {
 .steps-checklist {
   padding: 1.25rem;
   margin-bottom: 1rem;
-  max-height: 180px;
+  max-height: 320px;
   overflow-y: auto;
 }
 
@@ -2530,4 +2589,473 @@ body.tablet-view .step-instruction {
   .qr-card {
     display: none !important;
   }
+}
+
+/* ====================================================
+   MEAL COMPLETE SCREEN
+   ==================================================== */
+
+.complete-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1.5rem;
+  gap: 1.5rem;
+  min-height: calc(100% - 60px);
+  text-align: center;
+}
+
+.complete-image-container {
+  width: 100%;
+  max-width: 280px;
+}
+
+.complete-image {
+  width: 100%;
+  aspect-ratio: 4/3;
+  border-radius: 20px;
+  background: linear-gradient(135deg, rgba(0, 242, 254, 0.15) 0%, rgba(131, 58, 180, 0.15) 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+  border: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+.complete-image svg {
+  width: 60px;
+  height: 60px;
+  color: var(--text-dim);
+}
+
+.complete-message {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.complete-icon {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--ready) 0%, #00c853 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 0.5rem;
+  animation: celebrate 0.6s ease-out;
+}
+
+@keyframes celebrate {
+  0% { transform: scale(0); opacity: 0; }
+  50% { transform: scale(1.2); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.complete-icon svg {
+  width: 32px;
+  height: 32px;
+  color: white;
+}
+
+.complete-message h2 {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.complete-subtitle {
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.complete-message h3 {
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: var(--accent-cyan);
+  margin: 0;
+}
+
+.complete-thanks {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1.25rem 2rem;
+  text-align: center;
+}
+
+.complete-thanks svg {
+  width: 24px;
+  height: 24px;
+  color: #ff6b6b;
+  animation: heartbeat 1.5s ease-in-out infinite;
+}
+
+@keyframes heartbeat {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.15); }
+}
+
+.complete-thanks p {
+  margin: 0;
+  font-size: 1rem;
+  color: var(--text-primary);
+}
+
+.complete-thanks .tagline {
+  font-size: 0.85rem;
+  color: var(--text-dim);
+  font-style: italic;
+}
+
+.complete-actions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 0.5rem;
+}
+
+.complete-actions .action-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.9rem 1.5rem;
+  border-radius: 14px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: none;
+}
+
+.complete-actions .action-btn.secondary {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  color: var(--text-primary);
+}
+
+.complete-actions .action-btn.secondary:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.complete-actions .action-btn.primary {
+  background: linear-gradient(135deg, var(--accent-cyan) 0%, var(--accent-magenta) 100%);
+  color: white;
+}
+
+.complete-actions .action-btn.primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 242, 254, 0.3);
+}
+
+.complete-actions .action-btn svg {
+  width: 18px;
+  height: 18px;
+}
+
+/* Emoji Fallback for Images */
+.emoji-fallback {
+  font-size: 3rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, rgba(0, 242, 254, 0.1) 0%, rgba(131, 58, 180, 0.1) 100%);
+  position: relative;
+  z-index: 1;
+}
+
+.card-image .emoji-fallback {
+  font-size: 2.5rem;
+}
+
+.recipe-image .emoji-fallback,
+.complete-image .emoji-fallback {
+  font-size: 4rem;
+}
+
+/* Fixed Complete Screen Buttons */
+.favorite-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  max-width: 250px;
+  padding: 1rem 1.5rem;
+  border-radius: 50px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: 2px solid #ff6b6b;
+  background: transparent;
+  color: #ff6b6b;
+  transition: all 0.3s;
+}
+
+.favorite-btn:hover {
+  background: #ff6b6b;
+  color: white;
+}
+
+.favorite-btn.saved {
+  background: #ff6b6b;
+  color: white;
+}
+
+.favorite-btn svg {
+  width: 20px;
+  height: 20px;
+}
+
+.complete-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 1rem 1.8rem;
+  border-radius: 14px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition: all 0.3s;
+  min-width: 140px;
+}
+
+.complete-btn svg {
+  width: 18px;
+  height: 18px;
+}
+
+.complete-btn.secondary {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
+}
+
+.complete-btn.secondary:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.complete-btn.primary {
+  background: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%);
+  color: white;
+}
+
+.complete-btn.primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 242, 254, 0.4);
+}
+
+/* Saved/Favorites Screen */
+.saved-content {
+  padding: 1rem;
+  min-height: calc(100% - 60px);
+}
+
+.no-favorites {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 1rem;
+  text-align: center;
+  color: var(--text-secondary);
+  gap: 0.5rem;
+}
+
+.no-favorites svg {
+  width: 48px;
+  height: 48px;
+  color: var(--text-dim);
+  margin-bottom: 0.5rem;
+}
+
+.no-favorites p {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.no-favorites span {
+  font-size: 0.9rem;
+  color: var(--text-dim);
+}
+
+/* Saved Badge on Cards */
+.saved-badge {
+  background: #ff6b6b !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.4rem !important;
+  border-radius: 50% !important;
+  width: 28px;
+  height: 28px;
+}
+
+.saved-badge svg {
+  width: 14px;
+  height: 14px;
+  color: white;
+}
+
+/* Sidebar Icon-Only Buttons Row */
+.nav-icons-row {
+  display: flex;
+  gap: 0.75rem;
+  padding: 0.5rem 1rem;
+  justify-content: center;
+}
+
+.nav-icon-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-secondary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.nav-icon-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-primary);
+  border-color: rgba(0, 242, 254, 0.3);
+}
+
+.nav-icon-btn svg {
+  width: 20px;
+  height: 20px;
+}
+
+.nav-icon-btn:first-child:hover {
+  color: #ff6b6b;
+  border-color: rgba(255, 107, 107, 0.3);
+}
+
+.nav-icon-btn:last-child:hover {
+  color: var(--accent-cyan);
+}
+
+/* Thinking Orb Animation */
+.thinking-orb {
+  position: relative;
+  width: 80px;
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.orb-core {
+  position: absolute;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #00f2fe 0%, #4facfe 50%, #833ab4 100%);
+  animation: orbPulse 1.5s ease-in-out infinite;
+  box-shadow: 0 0 30px rgba(0, 242, 254, 0.5);
+}
+
+.orb-glow {
+  position: absolute;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(0, 242, 254, 0.3) 0%, transparent 70%);
+  animation: orbGlow 1.5s ease-in-out infinite;
+}
+
+.orb-ring {
+  position: absolute;
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  border-top-color: #00f2fe;
+  border-right-color: #4facfe;
+  animation: orbSpin 1s linear infinite;
+}
+
+@keyframes orbPulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.15); opacity: 0.8; }
+}
+
+@keyframes orbGlow {
+  0%, 100% { transform: scale(1); opacity: 0.5; }
+  50% { transform: scale(1.3); opacity: 0.8; }
+}
+
+@keyframes orbSpin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.recipes-loading .thinking-orb {
+  margin-bottom: 1rem;
+}
+
+/* Quick Access Row (Favorites & History) */
+.quick-access-row {
+  display: flex;
+  gap: 0.5rem;
+  width: 100%;
+}
+
+.quick-access-row .pill-btn {
+  flex: 1;
+  justify-content: center;
+}
+
+/* Icon-only buttons */
+.icon-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-secondary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.icon-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.25);
+}
+
+.icon-btn svg {
+  width: 20px;
+  height: 20px;
+}
+
+#favorites-btn:hover {
+  color: #ff6b6b;
+  border-color: rgba(255, 107, 107, 0.4);
+}
+
+#history-btn:hover {
+  color: var(--accent-cyan);
+  border-color: rgba(0, 242, 254, 0.4);
+}
+
+.quick-access-row {
+  gap: 0.75rem;
 }

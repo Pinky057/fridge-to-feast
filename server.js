@@ -2,10 +2,81 @@ require('dotenv').config();
 const express = require('express');
 const http = require('http');
 const { WebSocket, WebSocketServer } = require('ws');
+const { GoogleGenerativeAI } = require('@google/generative-ai');
 
 const app = express();
+app.use(express.json());
+
+// Enable CORS for frontend
+app.use((req, res, next) => {
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Headers', 'Content-Type');
+    next();
+});
+
 const server = http.createServer(app);
 const wss = new WebSocketServer({ server });
+
+// Initialize Gemini AI
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+
+// Recipe generation endpoint
+app.post('/api/recipes', async (req, res) => {
+    try {
+        const { ingredients } = req.body;
+
+        if (!ingredients || !Array.isArray(ingredients) || ingredients.length === 0) {
+            return res.status(400).json({ error: 'Please provide an array of ingredients' });
+        }
+
+        const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
+
+        const prompt = `You are a professional chef. Given these ingredients: ${ingredients.join(', ')}
+
+Generate exactly 4 recipes that can be made with these ingredients. For each recipe, provide:
+- A creative but simple title
+- Short description (under 10 words)
+- Cooking time
+- Difficulty (Easy, Medium, or Hard)
+- Match percentage (how well it matches the available ingredients, 70-100)
+- List of ingredients with emoji icons
+- Step-by-step directions (4-6 steps)
+
+IMPORTANT: Respond ONLY with valid JSON in this exact format, no other text:
+{
+  "recipes": [
+    {
+      "id": "1",
+      "title": "Recipe Name",
+      "description": "Short description",
+      "time": "15 min",
+      "difficulty": "Easy",
+      "match": 95,
+      "ingredients": [
+        { "icon": "🥚", "name": "Eggs x2" }
+      ],
+      "directions": [
+        "Step 1 instruction",
+        "Step 2 instruction"
+      ]
+    }
+  ]
+}`;
+
+        const result = await model.generateContent(prompt);
+        const response = await result.response;
+        let text = response.text();
+
+        // Clean up the response - remove markdown code blocks if present
+        text = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+
+        const recipes = JSON.parse(text);
+        res.json(recipes);
+    } catch (error) {
+        console.error('Recipe generation error:', error);
+        res.status(500).json({ error: 'Failed to generate recipes', details: error.message });
+    }
+});
 
 // In production, we would serve static files built by Vite
 // app.use(express.static('frontend/dist'));

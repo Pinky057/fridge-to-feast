@@ -912,18 +912,34 @@ function sendText() {
         ws.send(JSON.stringify(message));
         updateStatus('thinking', 'Processing recipe...');
     } else {
-        // Demo mode: Parse ingredients from text and show suggestions
+        // Parse ingredients from text and call Gemini API
         const ingredients = text.split(/[,\s]+/).filter(w => w.length > 2);
         detectedIngredients = ingredients.map(name => ({
             icon: '🥘',
             name: name.charAt(0).toUpperCase() + name.slice(1)
         }));
 
-        appendTranscript('ai', `Great! I found some recipes based on: ${ingredients.join(', ')}. Let me show you some suggestions!`);
+        appendTranscript('ai', `Great! Let me find some recipes based on: ${ingredients.join(', ')}...`);
 
-        // Navigate to suggestions screen
-        setTimeout(() => {
+        // Navigate to suggestions screen and fetch recipes
+        setTimeout(async () => {
             navigateToScreen('suggestions');
+            showRecipesLoading();
+
+            const recipes = await fetchRecipesFromAPI(detectedIngredients);
+
+            if (recipes) {
+                // Add image URLs to recipes
+                recipes.forEach((recipe, index) => {
+                    recipe.imageUrl = FOOD_IMAGES[index % FOOD_IMAGES.length];
+                });
+                generatedRecipes = recipes;
+                renderRecipeCards(recipes);
+                appendTranscript('ai', `Found ${recipes.length} recipes for you!`);
+            } else {
+                renderRecipeCards(null);
+                appendTranscript('ai', `Sorry, couldn't generate recipes. Please try again.`);
+            }
         }, 500);
     }
 }
@@ -987,8 +1003,150 @@ function navigateToScreen(screenId) {
       initRecipeScreen();
     } else if (screenId === 'cook') {
       initCookScreen();
+    } else if (screenId === 'complete') {
+      initCompleteScreen();
+    } else if (screenId === 'saved') {
+      initSavedScreen();
+    } else if (screenId === 'history') {
+      initHistoryScreen();
     }
   }, 350);
+}
+
+/**
+ * Initialize history screen
+ */
+function initHistoryScreen() {
+  const grid = document.getElementById('history-grid');
+  const noHistory = document.getElementById('no-history');
+  const history = getHistory();
+
+  grid.innerHTML = '';
+
+  if (history.length === 0) {
+    noHistory.style.display = 'flex';
+    grid.style.display = 'none';
+    refreshIcons();
+    return;
+  }
+
+  noHistory.style.display = 'none';
+  grid.style.display = 'grid';
+
+  history.forEach((recipe, index) => {
+    const card = document.createElement('div');
+    card.className = 'recipe-card';
+    card.dataset.recipeId = recipe.id;
+    const imageUrl = recipe.imageUrl || FOOD_IMAGES[index % FOOD_IMAGES.length];
+    const emoji = FOOD_EMOJIS[index % FOOD_EMOJIS.length];
+
+    // Format date
+    const cookedDate = new Date(recipe.cookedAt);
+    const dateStr = cookedDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+
+    card.innerHTML = `
+      <div class="card-image" data-image-url="${imageUrl}">
+        <span class="emoji-fallback">${emoji}</span>
+        <div class="card-badge">${dateStr}</div>
+      </div>
+      <div class="card-content">
+        <h4>${recipe.title}</h4>
+        <p>${recipe.description}</p>
+        <div class="card-meta">
+          <span><i data-lucide="clock"></i> ${recipe.time}</span>
+          <span><i data-lucide="flame"></i> ${recipe.difficulty}</span>
+        </div>
+      </div>
+    `;
+
+    // Load image
+    const cardImage = card.querySelector('.card-image');
+    const img = new Image();
+    img.onload = () => {
+      cardImage.style.backgroundImage = `url('${imageUrl}')`;
+      cardImage.style.backgroundSize = 'cover';
+      cardImage.style.backgroundPosition = 'center';
+      cardImage.querySelector('.emoji-fallback').style.display = 'none';
+    };
+    img.src = imageUrl;
+
+    // Click to view recipe
+    card.addEventListener('click', () => {
+      currentRecipe = recipe;
+      generatedRecipes = [recipe];
+      navigateToScreen('recipe');
+    });
+
+    grid.appendChild(card);
+  });
+
+  refreshIcons();
+}
+
+/**
+ * Initialize saved/favorites screen
+ */
+function initSavedScreen() {
+  const grid = document.getElementById('favorites-grid');
+  const noFavorites = document.getElementById('no-favorites');
+  const favs = getFavorites();
+
+  grid.innerHTML = '';
+
+  if (favs.length === 0) {
+    noFavorites.style.display = 'flex';
+    grid.style.display = 'none';
+    refreshIcons();
+    return;
+  }
+
+  noFavorites.style.display = 'none';
+  grid.style.display = 'grid';
+
+  favs.forEach((recipe, index) => {
+    const card = document.createElement('div');
+    card.className = 'recipe-card';
+    card.dataset.recipeId = recipe.id;
+    const imageUrl = recipe.imageUrl || FOOD_IMAGES[index % FOOD_IMAGES.length];
+    const emoji = FOOD_EMOJIS[index % FOOD_EMOJIS.length];
+
+    card.innerHTML = `
+      <div class="card-image" data-image-url="${imageUrl}">
+        <span class="emoji-fallback">${emoji}</span>
+        <div class="card-badge saved-badge"><i data-lucide="heart"></i></div>
+      </div>
+      <div class="card-content">
+        <h4>${recipe.title}</h4>
+        <p>${recipe.description}</p>
+        <div class="card-meta">
+          <span><i data-lucide="clock"></i> ${recipe.time}</span>
+          <span><i data-lucide="flame"></i> ${recipe.difficulty}</span>
+        </div>
+      </div>
+    `;
+
+    // Load image
+    const cardImage = card.querySelector('.card-image');
+    const img = new Image();
+    img.onload = () => {
+      cardImage.style.backgroundImage = `url('${imageUrl}')`;
+      cardImage.style.backgroundSize = 'cover';
+      cardImage.style.backgroundPosition = 'center';
+      cardImage.querySelector('.emoji-fallback').style.display = 'none';
+    };
+    img.src = imageUrl;
+
+    // Click to view recipe
+    card.addEventListener('click', () => {
+      currentRecipe = recipe;
+      generatedRecipes = [recipe];
+      navigateToScreen('recipe');
+    });
+
+    grid.appendChild(card);
+  });
+
+  refreshIcons();
 }
 
 /**
@@ -1174,90 +1332,249 @@ function addDetectedIngredient(icon, name) {
 // SUGGESTIONS SCREEN LOGIC
 // ====================================================
 
-// Demo recipe data for suggestions
-const DEMO_RECIPES = [
-  {
-    id: '1',
-    title: 'French Toast',
-    description: 'Classic breakfast favorite',
-    time: '15 min',
-    difficulty: 'Easy',
-    match: 95,
-    ingredients: [
-      { icon: '🥚', name: 'Eggs x2' },
-      { icon: '🍞', name: 'Bread slices' },
-      { icon: '🥛', name: 'Milk' },
-      { icon: '✨', name: 'Cinnamon' }
-    ],
-    directions: [
-      'Beat eggs with milk and cinnamon in a shallow bowl.',
-      'Heat butter in a pan over medium heat.',
-      'Dip each bread slice in the egg mixture, coating both sides.',
-      'Cook until golden brown, about 2-3 minutes per side.',
-      'Serve with maple syrup and fresh berries.'
-    ]
-  },
-  {
-    id: '2',
-    title: 'Egg Sandwich',
-    description: 'Quick and filling',
-    time: '10 min',
-    difficulty: 'Easy',
-    match: 90,
-    ingredients: [
-      { icon: '🥚', name: 'Eggs x2' },
-      { icon: '🍞', name: 'Bread' },
-      { icon: '🧈', name: 'Butter' },
-      { icon: '🧂', name: 'Salt & Pepper' }
-    ],
-    directions: [
-      'Toast the bread slices until golden.',
-      'Melt butter in a pan and fry eggs sunny-side up.',
-      'Season with salt and pepper.',
-      'Place eggs between toast slices and serve.'
-    ]
-  },
-  {
-    id: '3',
-    title: 'Scrambled Eggs on Toast',
-    description: 'Simple and delicious',
-    time: '8 min',
-    difficulty: 'Easy',
-    match: 85,
-    ingredients: [
-      { icon: '🥚', name: 'Eggs x3' },
-      { icon: '🍞', name: 'Toast' },
-      { icon: '🧈', name: 'Butter' },
-      { icon: '🧀', name: 'Cheese (optional)' }
-    ],
-    directions: [
-      'Beat eggs in a bowl.',
-      'Melt butter in a pan over low heat.',
-      'Add eggs and stir gently until creamy.',
-      'Serve on buttered toast with cheese if desired.'
-    ]
-  },
-  {
-    id: '4',
-    title: 'Egg in a Hole',
-    description: 'Fun twist on breakfast',
-    time: '12 min',
-    difficulty: 'Easy',
-    match: 80,
-    ingredients: [
-      { icon: '🥚', name: 'Eggs' },
-      { icon: '🍞', name: 'Bread' },
-      { icon: '🧈', name: 'Butter' }
-    ],
-    directions: [
-      'Cut a circle out of the center of each bread slice.',
-      'Butter both sides of the bread.',
-      'Place bread in a hot pan and crack an egg into the hole.',
-      'Cook until egg is set, flip and cook briefly.',
-      'Season and serve immediately.'
-    ]
-  }
+// Dynamic recipes from Gemini API
+let generatedRecipes = [];
+
+const API_BASE_URL = 'http://localhost:3000';
+
+// Curated food images for recipes
+const FOOD_IMAGES = [
+  'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400&h=300&fit=crop',
+  'https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=400&h=300&fit=crop',
+  'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=400&h=300&fit=crop',
+  'https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?w=400&h=300&fit=crop',
+  'https://images.unsplash.com/photo-1476224203421-9ac39bcb3327?w=400&h=300&fit=crop',
+  'https://images.unsplash.com/photo-1499028344343-cd173ffc68a9?w=400&h=300&fit=crop',
+  'https://images.unsplash.com/photo-1432139555190-58524dae6a55?w=400&h=300&fit=crop',
+  'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=400&h=300&fit=crop'
 ];
+
+// Fallback food emojis when images fail
+const FOOD_EMOJIS = ['🍳', '🍲', '🥗', '🍝', '🍜', '🥘', '🍛', '🥪'];
+
+// Favorites storage
+let favorites = JSON.parse(localStorage.getItem('fridgeToFeastFavorites') || '[]');
+
+// History storage
+let cookingHistory = JSON.parse(localStorage.getItem('fridgeToFeastHistory') || '[]');
+
+/**
+ * Add recipe to cooking history
+ */
+function addToHistory(recipe) {
+  if (!recipe) return;
+
+  // Remove if already exists (to move to top)
+  cookingHistory = cookingHistory.filter(h => h.title !== recipe.title);
+
+  // Add to beginning
+  cookingHistory.unshift({
+    ...recipe,
+    cookedAt: new Date().toISOString()
+  });
+
+  // Keep only last 20
+  cookingHistory = cookingHistory.slice(0, 20);
+
+  localStorage.setItem('fridgeToFeastHistory', JSON.stringify(cookingHistory));
+}
+
+/**
+ * Get cooking history
+ */
+function getHistory() {
+  return cookingHistory;
+}
+
+/**
+ * Save recipe to favorites
+ */
+function saveToFavorites(recipe) {
+  if (!recipe) return false;
+
+  // Check if already saved
+  const exists = favorites.some(f => f.title === recipe.title);
+  if (exists) return false;
+
+  favorites.push({
+    ...recipe,
+    savedAt: new Date().toISOString()
+  });
+
+  localStorage.setItem('fridgeToFeastFavorites', JSON.stringify(favorites));
+  return true;
+}
+
+/**
+ * Check if recipe is in favorites
+ */
+function isInFavorites(recipe) {
+  if (!recipe) return false;
+  return favorites.some(f => f.title === recipe.title);
+}
+
+/**
+ * Remove recipe from favorites
+ */
+function removeFromFavorites(recipe) {
+  if (!recipe) return;
+  favorites = favorites.filter(f => f.title !== recipe.title);
+  localStorage.setItem('fridgeToFeastFavorites', JSON.stringify(favorites));
+}
+
+/**
+ * Get all favorites
+ */
+function getFavorites() {
+  return favorites;
+}
+
+/**
+ * Create image element with emoji fallback
+ */
+function createImageWithFallback(container, imageUrl, emojiIndex) {
+  const emoji = FOOD_EMOJIS[emojiIndex % FOOD_EMOJIS.length];
+
+  // Try loading image
+  const img = new Image();
+  img.onload = () => {
+    container.style.backgroundImage = `url('${imageUrl}')`;
+    container.style.backgroundSize = 'cover';
+    container.style.backgroundPosition = 'center';
+    container.innerHTML = '';
+  };
+  img.onerror = () => {
+    // Fallback to emoji
+    container.style.backgroundImage = 'none';
+    container.innerHTML = `<span class="emoji-fallback">${emoji}</span>`;
+  };
+  img.src = imageUrl;
+}
+
+/**
+ * Fetch recipes from Gemini API based on ingredients
+ */
+async function fetchRecipesFromAPI(ingredients) {
+  try {
+    const ingredientNames = ingredients.map(ing =>
+      typeof ing === 'string' ? ing : ing.name
+    );
+
+    const response = await fetch(`${API_BASE_URL}/api/recipes`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ ingredients: ingredientNames }),
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch recipes');
+    }
+
+    const data = await response.json();
+    return data.recipes || [];
+  } catch (error) {
+    console.error('Error fetching recipes:', error);
+    return null;
+  }
+}
+
+/**
+ * Render recipe cards dynamically
+ */
+function renderRecipeCards(recipes) {
+  const grid = document.getElementById('recipe-cards-grid');
+  const loading = document.getElementById('recipes-loading');
+
+  if (loading) {
+    loading.style.display = 'none';
+  }
+
+  // Clear existing cards (except loading)
+  const existingCards = grid.querySelectorAll('.recipe-card');
+  existingCards.forEach(card => card.remove());
+
+  if (!recipes || recipes.length === 0) {
+    grid.innerHTML = `
+      <div class="recipes-error">
+        <p>Couldn't generate recipes. Please try again.</p>
+        <button onclick="goBack()" class="btn-secondary">Go Back</button>
+      </div>
+    `;
+    return;
+  }
+
+  // Create recipe cards
+  recipes.forEach((recipe, index) => {
+    const card = document.createElement('div');
+    card.className = 'recipe-card';
+    card.dataset.recipeId = recipe.id;
+    const imageUrl = recipe.imageUrl || FOOD_IMAGES[index % FOOD_IMAGES.length];
+    const emoji = FOOD_EMOJIS[index % FOOD_EMOJIS.length];
+    card.innerHTML = `
+      <div class="card-image" data-image-url="${imageUrl}" data-emoji="${emoji}">
+        <span class="emoji-fallback">${emoji}</span>
+        <div class="card-badge">${recipe.match}% match</div>
+      </div>
+      <div class="card-content">
+        <h4>${recipe.title}</h4>
+        <p>${recipe.description}</p>
+        <div class="card-meta">
+          <span><i data-lucide="clock"></i> ${recipe.time}</span>
+          <span><i data-lucide="flame"></i> ${recipe.difficulty}</span>
+        </div>
+      </div>
+    `;
+
+    // Try loading image with fallback
+    const cardImage = card.querySelector('.card-image');
+    const img = new Image();
+    img.onload = () => {
+      cardImage.style.backgroundImage = `url('${imageUrl}')`;
+      cardImage.querySelector('.emoji-fallback').style.display = 'none';
+    };
+    img.src = imageUrl;
+
+    // Animate entrance
+    card.style.opacity = '0';
+    card.style.transform = 'translateY(20px)';
+    grid.appendChild(card);
+
+    setTimeout(() => {
+      card.style.transition = 'all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)';
+      card.style.opacity = '1';
+      card.style.transform = 'translateY(0)';
+    }, 100 + index * 100);
+  });
+
+  refreshIcons();
+}
+
+/**
+ * Show loading state on suggestions screen
+ */
+function showRecipesLoading() {
+  const grid = document.getElementById('recipe-cards-grid');
+  const existingCards = grid.querySelectorAll('.recipe-card');
+  existingCards.forEach(card => card.remove());
+
+  const loading = document.getElementById('recipes-loading');
+  if (loading) {
+    loading.style.display = 'flex';
+  } else {
+    grid.innerHTML = `
+      <div id="recipes-loading" class="recipes-loading">
+        <div class="thinking-orb">
+          <div class="orb-glow"></div>
+          <div class="orb-core"></div>
+          <div class="orb-ring"></div>
+        </div>
+        <p>Chef is thinking of recipes...</p>
+      </div>
+    `;
+  }
+}
 
 /**
  * Initialize suggestions screen
@@ -1290,7 +1607,7 @@ function initSuggestionsScreen() {
  * Select a recipe and navigate to recipe screen
  */
 function selectRecipe(recipeId) {
-  const recipe = DEMO_RECIPES.find(r => r.id === recipeId);
+  const recipe = generatedRecipes.find(r => r.id === recipeId);
   if (recipe) {
     currentRecipe = recipe;
     navigateToScreen('recipe');
@@ -1305,15 +1622,40 @@ function selectRecipe(recipeId) {
  * Initialize recipe screen with data
  */
 function initRecipeScreen() {
-  // Fallback demo recipe if none selected
+  // Fallback to first generated recipe if none selected
+  if (!currentRecipe && generatedRecipes.length > 0) {
+    currentRecipe = generatedRecipes[0];
+  }
+
   if (!currentRecipe) {
-    currentRecipe = DEMO_RECIPES[0];
+    console.error('No recipe selected');
+    goBack();
+    return;
   }
 
   // Update UI
   document.getElementById('recipe-title').textContent = currentRecipe.title;
   document.getElementById('recipe-time').textContent = currentRecipe.time;
   document.getElementById('recipe-difficulty').textContent = currentRecipe.difficulty;
+
+  // Update recipe image with emoji fallback
+  const recipeImage = document.getElementById('recipe-image');
+  const recipeIndex = generatedRecipes.findIndex(r => r.id === currentRecipe.id);
+  const emoji = FOOD_EMOJIS[recipeIndex >= 0 ? recipeIndex % FOOD_EMOJIS.length : 0];
+
+  if (currentRecipe.imageUrl) {
+    recipeImage.innerHTML = `<span class="emoji-fallback">${emoji}</span>`;
+    const img = new Image();
+    img.onload = () => {
+      recipeImage.style.backgroundImage = `url('${currentRecipe.imageUrl}')`;
+      recipeImage.style.backgroundSize = 'cover';
+      recipeImage.style.backgroundPosition = 'center';
+      recipeImage.querySelector('.emoji-fallback').style.display = 'none';
+    };
+    img.src = currentRecipe.imageUrl;
+  } else {
+    recipeImage.innerHTML = `<span class="emoji-fallback">${emoji}</span>`;
+  }
 
   // Update ingredients list
   const ingredientsList = document.getElementById('recipe-ingredients');
@@ -1442,10 +1784,53 @@ function nextCookStep() {
     currentCookStep++;
     updateCookStepDisplay();
   } else {
-    // Recipe complete
-    alert('Recipe complete! Enjoy your meal! 🎉');
-    navigateToScreen('home');
+    // Recipe complete - show completion screen
+    navigateToScreen('complete');
   }
+}
+
+/**
+ * Initialize completion screen
+ */
+function initCompleteScreen() {
+  if (!currentRecipe) return;
+
+  // Add to cooking history
+  addToHistory(currentRecipe);
+
+  // Set recipe name
+  document.getElementById('complete-recipe-name').textContent = currentRecipe.title;
+
+  // Update favorite button state
+  const btn = document.getElementById('save-favorite-btn');
+  if (isInFavorites(currentRecipe)) {
+    btn.classList.add('saved');
+    btn.innerHTML = '<i data-lucide="check"></i><span>Saved!</span>';
+  } else {
+    btn.classList.remove('saved');
+    btn.innerHTML = '<i data-lucide="heart"></i><span>Save to Favorites</span>';
+  }
+
+  // Set food image with emoji fallback
+  const completeImage = document.getElementById('complete-image');
+  const recipeIndex = generatedRecipes.findIndex(r => r.id === currentRecipe.id);
+  const emoji = FOOD_EMOJIS[recipeIndex >= 0 ? recipeIndex % FOOD_EMOJIS.length : 0];
+
+  if (currentRecipe.imageUrl) {
+    completeImage.innerHTML = `<span class="emoji-fallback">${emoji}</span>`;
+    const img = new Image();
+    img.onload = () => {
+      completeImage.style.backgroundImage = `url('${currentRecipe.imageUrl}')`;
+      completeImage.style.backgroundSize = 'cover';
+      completeImage.style.backgroundPosition = 'center';
+      completeImage.querySelector('.emoji-fallback').style.display = 'none';
+    };
+    img.src = currentRecipe.imageUrl;
+  } else {
+    completeImage.innerHTML = `<span class="emoji-fallback">${emoji}</span>`;
+  }
+
+  refreshIcons();
 }
 
 /**
@@ -1470,11 +1855,76 @@ document.getElementById('scan-back-btn')?.addEventListener('click', () => {
 
 document.getElementById('recipe-back-btn')?.addEventListener('click', goBack);
 document.getElementById('cook-back-btn')?.addEventListener('click', goBack);
+document.getElementById('saved-back-btn')?.addEventListener('click', goBack);
+document.getElementById('history-back-btn')?.addEventListener('click', goBack);
+
+// Saved nav item
+document.getElementById('saved-nav')?.addEventListener('click', () => {
+  navigateToScreen('saved');
+});
+
+// History nav item
+document.getElementById('history-nav')?.addEventListener('click', () => {
+  navigateToScreen('history');
+});
+
+// Favorites button in phone UI
+document.getElementById('favorites-btn')?.addEventListener('click', () => {
+  navigateToScreen('saved');
+});
+
+// History button in phone UI
+document.getElementById('history-btn')?.addEventListener('click', () => {
+  navigateToScreen('history');
+});
+
+// Complete screen actions
+document.getElementById('cook-again-btn')?.addEventListener('click', () => {
+  currentRecipe = null;
+  navigateToScreen('home');
+});
+document.getElementById('go-home-btn')?.addEventListener('click', () => {
+  currentRecipe = null;
+  generatedRecipes = [];
+  navigateToScreen('home');
+});
+document.getElementById('save-favorite-btn')?.addEventListener('click', () => {
+  const btn = document.getElementById('save-favorite-btn');
+  if (isInFavorites(currentRecipe)) {
+    removeFromFavorites(currentRecipe);
+    btn.classList.remove('saved');
+    btn.innerHTML = '<i data-lucide="heart"></i><span>Save to Favorites</span>';
+  } else {
+    saveToFavorites(currentRecipe);
+    btn.classList.add('saved');
+    btn.innerHTML = '<i data-lucide="check"></i><span>Saved!</span>';
+  }
+  refreshIcons();
+});
 
 // Scan screen actions
-document.getElementById('get-recipes-btn')?.addEventListener('click', () => {
+document.getElementById('get-recipes-btn')?.addEventListener('click', async () => {
   stopScanCamera();
   navigateToScreen('suggestions');
+  showRecipesLoading();
+
+  // Get ingredients (from detected or use defaults for testing)
+  const ingredients = detectedIngredients.length > 0
+    ? detectedIngredients
+    : [{ name: 'eggs' }, { name: 'bread' }, { name: 'butter' }, { name: 'cheese' }];
+
+  const recipes = await fetchRecipesFromAPI(ingredients);
+
+  if (recipes) {
+    // Add image URLs to recipes
+    recipes.forEach((recipe, index) => {
+      recipe.imageUrl = FOOD_IMAGES[index % FOOD_IMAGES.length];
+    });
+    generatedRecipes = recipes;
+    renderRecipeCards(recipes);
+  } else {
+    renderRecipeCards(null);
+  }
 });
 
 document.getElementById('cancel-scan-btn')?.addEventListener('click', () => {

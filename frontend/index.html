@@ -28,9 +28,13 @@
           <i data-lucide="book-open"></i>
           <span>Recipes</span>
         </li>
-        <li class="nav-item">
+        <li class="nav-item" id="saved-nav">
           <i data-lucide="heart"></i>
           <span>Saved</span>
+        </li>
+        <li class="nav-item" id="history-nav">
+          <i data-lucide="history"></i>
+          <span>History</span>
         </li>
         <li class="nav-item has-submenu">
           <div class="nav-item-header" id="view-toggle">
@@ -127,9 +131,15 @@
               <div class="controls-dock">
 
                 <div class="secondary-controls">
-                  <button id="history-btn" class="pill-btn">
-                     <i data-lucide="history"></i> <span>History</span>
-                  </button>
+                  <!-- Favorites & History Icons -->
+                  <div class="quick-access-row">
+                    <button id="favorites-btn" class="icon-btn" title="Favorites">
+                       <i data-lucide="heart"></i>
+                    </button>
+                    <button id="history-btn" class="icon-btn" title="History">
+                       <i data-lucide="history"></i>
+                    </button>
+                  </div>
 
                   <button id="wake-word-btn" class="pill-btn" title="Enable hands-free voice activation">
                      <i data-lucide="ear"></i> <span>Hey Chef</span>
@@ -268,67 +278,16 @@
             <!-- Recipe Cards Grid -->
             <div class="suggestions-content">
               <div id="recipe-cards-grid" class="recipe-cards-grid">
-
-                <!-- Recipe Card 1 -->
-                <div class="recipe-card" data-recipe-id="1">
-                  <div class="card-image">
-                    <div class="card-badge">95% match</div>
+                <!-- Loading State -->
+                <div id="recipes-loading" class="recipes-loading">
+                  <div class="thinking-orb">
+                    <div class="orb-glow"></div>
+                    <div class="orb-core"></div>
+                    <div class="orb-ring"></div>
                   </div>
-                  <div class="card-content">
-                    <h4>French Toast</h4>
-                    <p>Classic breakfast favorite</p>
-                    <div class="card-meta">
-                      <span><i data-lucide="clock"></i> 15 min</span>
-                      <span><i data-lucide="flame"></i> Easy</span>
-                    </div>
-                  </div>
+                  <p>Chef is thinking of recipes...</p>
                 </div>
-
-                <!-- Recipe Card 2 -->
-                <div class="recipe-card" data-recipe-id="2">
-                  <div class="card-image">
-                    <div class="card-badge">90% match</div>
-                  </div>
-                  <div class="card-content">
-                    <h4>Egg Sandwich</h4>
-                    <p>Quick and filling</p>
-                    <div class="card-meta">
-                      <span><i data-lucide="clock"></i> 10 min</span>
-                      <span><i data-lucide="flame"></i> Easy</span>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Recipe Card 3 -->
-                <div class="recipe-card" data-recipe-id="3">
-                  <div class="card-image">
-                    <div class="card-badge">85% match</div>
-                  </div>
-                  <div class="card-content">
-                    <h4>Scrambled Eggs on Toast</h4>
-                    <p>Simple and delicious</p>
-                    <div class="card-meta">
-                      <span><i data-lucide="clock"></i> 8 min</span>
-                      <span><i data-lucide="flame"></i> Easy</span>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Recipe Card 4 -->
-                <div class="recipe-card" data-recipe-id="4">
-                  <div class="card-image">
-                    <div class="card-badge">80% match</div>
-                  </div>
-                  <div class="card-content">
-                    <h4>Egg in a Hole</h4>
-                    <p>Fun twist on breakfast</p>
-                    <div class="card-meta">
-                      <span><i data-lucide="clock"></i> 12 min</span>
-                      <span><i data-lucide="flame"></i> Easy</span>
-                    </div>
-                  </div>
-                </div>
-
+                <!-- Recipe cards will be dynamically inserted here -->
               </div>
             </div>
 
@@ -485,6 +444,130 @@
             </div>
 
           </div> <!-- End Cook Screen -->
+
+          <!-- ========================================
+               SCREEN 5: MEAL COMPLETE
+               ======================================== -->
+          <div id="complete-screen" class="screen">
+
+            <!-- Header -->
+            <div class="screen-header glass-header">
+              <div class="header-title">
+                <i data-lucide="sparkles"></i>
+                <span>Bon Appetit!</span>
+              </div>
+            </div>
+
+            <!-- Complete Content -->
+            <div class="complete-content">
+
+              <!-- Food Image -->
+              <div class="complete-image-container">
+                <div id="complete-image" class="complete-image">
+                  <i data-lucide="utensils"></i>
+                </div>
+              </div>
+
+              <!-- Success Message -->
+              <div class="complete-message">
+                <div class="complete-icon">
+                  <i data-lucide="check-circle"></i>
+                </div>
+                <h2 id="complete-title">Enjoy Your Meal!</h2>
+                <p class="complete-subtitle">You've successfully prepared</p>
+                <h3 id="complete-recipe-name">Delicious Recipe</h3>
+              </div>
+
+              <!-- Thank You -->
+              <div class="complete-thanks glass-island">
+                <i data-lucide="heart"></i>
+                <p>Thanks for cooking with <strong>Fridge-to-Feast</strong></p>
+                <span class="tagline">Your AI Sous-Chef</span>
+              </div>
+
+              <!-- Save to Favorites -->
+              <button id="save-favorite-btn" class="favorite-btn">
+                <i data-lucide="heart"></i>
+                <span>Save to Favorites</span>
+              </button>
+
+              <!-- Action Buttons -->
+              <div class="complete-actions">
+                <button id="cook-again-btn" class="complete-btn secondary">
+                  <i data-lucide="refresh-cw"></i>
+                  <span>Cook Another</span>
+                </button>
+                <button id="go-home-btn" class="complete-btn primary">
+                  <i data-lucide="home"></i>
+                  <span>Home</span>
+                </button>
+              </div>
+
+            </div>
+
+          </div> <!-- End Complete Screen -->
+
+          <!-- ========================================
+               SCREEN 6: SAVED FAVORITES
+               ======================================== -->
+          <div id="saved-screen" class="screen">
+
+            <!-- Header -->
+            <div class="screen-header glass-header">
+              <button class="back-btn" id="saved-back-btn">
+                <i data-lucide="arrow-left"></i>
+              </button>
+              <div class="header-title">
+                <i data-lucide="heart"></i>
+                <span>Saved Recipes</span>
+              </div>
+              <div class="header-spacer"></div>
+            </div>
+
+            <!-- Favorites Content -->
+            <div class="saved-content">
+              <div id="favorites-grid" class="recipe-cards-grid">
+                <!-- Favorites will be loaded here -->
+              </div>
+              <div id="no-favorites" class="no-favorites">
+                <i data-lucide="heart"></i>
+                <p>No saved recipes yet</p>
+                <span>Complete cooking a recipe to save it!</span>
+              </div>
+            </div>
+
+          </div> <!-- End Saved Screen -->
+
+          <!-- ========================================
+               SCREEN 7: COOKING HISTORY
+               ======================================== -->
+          <div id="history-screen" class="screen">
+
+            <!-- Header -->
+            <div class="screen-header glass-header">
+              <button class="back-btn" id="history-back-btn">
+                <i data-lucide="arrow-left"></i>
+              </button>
+              <div class="header-title">
+                <i data-lucide="history"></i>
+                <span>Cooking History</span>
+              </div>
+              <div class="header-spacer"></div>
+            </div>
+
+            <!-- History Content -->
+            <div class="saved-content">
+              <div id="history-grid" class="recipe-cards-grid">
+                <!-- History will be loaded here -->
+              </div>
+              <div id="no-history" class="no-favorites">
+                <i data-lucide="history"></i>
+                <p>No cooking history yet</p>
+                <span>Recipes you cook will appear here!</span>
+              </div>
+            </div>
+
+          </div> <!-- End History Screen -->
 
         </div> <!-- End UI Layer -->
       </div> <!-- End Phone Frame -->
